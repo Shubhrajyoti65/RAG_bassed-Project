@@ -1,6 +1,7 @@
 function errorHandler(err, req, res, next) {
   console.error("Error:", err.message);
   console.error("Stack:", err.stack);
+  const isProduction = process.env.NODE_ENV === "production";
 
   const message = (err.message || "").toLowerCase();
 
@@ -20,6 +21,19 @@ function errorHandler(err, req, res, next) {
 
   if (message.includes("only pdf files are accepted")) {
     return res.status(400).json({ error: "Only PDF files are accepted." });
+  }
+
+  if (
+    err.statusCode === 400 ||
+    message.includes("could not extract text from pdf") ||
+    message.includes("uploaded pdf could not be read") ||
+    message.includes("invalid pdf")
+  ) {
+    return res.status(400).json({
+      error:
+        err.message ||
+        "Invalid PDF file. Please upload a valid text-based PDF and try again.",
+    });
   }
 
   if (message.includes("api key")) {
@@ -50,7 +64,10 @@ function errorHandler(err, req, res, next) {
   }
 
   res.status(500).json({
-    error: "An internal error occurred. Please try again.",
+    error:
+      !isProduction && err.message
+        ? err.message
+        : "An internal error occurred. Please try again.",
   });
 }
 

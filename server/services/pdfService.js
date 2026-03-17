@@ -1,13 +1,27 @@
 const pdfParse = require("pdf-parse");
 
 async function extractTextFromPDF(buffer) {
-  const data = await pdfParse(buffer);
-  if (!data.text || data.text.trim().length === 0) {
-    throw new Error(
-      "Could not extract text from PDF. The file may be scanned or image-based."
+  try {
+    const data = await pdfParse(buffer);
+    if (!data.text || data.text.trim().length === 0) {
+      const error = new Error(
+        "Could not extract text from PDF. The file may be scanned or image-based."
+      );
+      error.statusCode = 400;
+      throw error;
+    }
+    return data.text.trim();
+  } catch (err) {
+    if (err.statusCode) {
+      throw err;
+    }
+
+    const parseError = new Error(
+      "The uploaded PDF could not be read. Please upload a valid text-based PDF file."
     );
+    parseError.statusCode = 400;
+    throw parseError;
   }
-  return data.text.trim();
 }
 
 module.exports = { extractTextFromPDF };

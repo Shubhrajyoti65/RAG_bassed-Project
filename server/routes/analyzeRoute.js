@@ -42,12 +42,17 @@ router.post(
       }
 
       const analysis = await analyzeCase(caseText);
-      await saveHistory({
-        userId: req.user.id,
-        caseText,
-        inputType,
-        analysis,
-      });
+      try {
+        await saveHistory({
+          userId: req.user.id,
+          caseText,
+          inputType,
+          analysis,
+        });
+      } catch (historyError) {
+        // Analysis should not fail if history persistence fails.
+        console.warn("Failed to save analysis history:", historyError.message);
+      }
 
       res.json(analysis);
     } catch (err) {
