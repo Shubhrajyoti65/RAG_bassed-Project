@@ -192,7 +192,7 @@ function App() {
       <footer className="border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-auto">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <p className="text-xs text-gray-400 dark:text-slate-400 text-center">
-            NyayaSahayak &mdash; AI-Powered Legal Case Analysis Tool |
+            Nyaay Sahayak &mdash; AI-Powered Legal Case Analysis Tool |
             Allahabad High Court Domestic Violence Cases | For Educational
             Purposes Only
           </p>

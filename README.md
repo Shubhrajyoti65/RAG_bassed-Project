@@ -1,6 +1,6 @@
-# NyayaSahayak - Hybrid RAG Setup Guide
+# Nyaay_Sahayak - Hybrid RAG Setup Guide
 
-NyayaSahayak now uses a hybrid architecture:
+Nyaay_Sahayak now uses a hybrid architecture:
 
 - client: React + Vite
 - server: Node.js + Express + MongoDB (auth, routing, PDF extraction, history)

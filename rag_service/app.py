@@ -6,7 +6,7 @@ try:
 except ModuleNotFoundError:
     from rag_pipeline import analyze_case_text, build_default_query_config
 
-app = FastAPI(title="NyayaSahayak RAG Service")
+app = FastAPI(title="Nyaay Sahayak RAG Service")
 
 
 class AnalyzeRequest(BaseModel):

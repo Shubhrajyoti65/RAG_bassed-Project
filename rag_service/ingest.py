@@ -1,4 +1,4 @@
-"""Phase 2 one-time ingestion script for NyayaSahayak FAISS index."""
+"""Phase 2 one-time ingestion script for Nyaay Sahayak FAISS index."""
 
 from pathlib import Path
 

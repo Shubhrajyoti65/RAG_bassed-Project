@@ -37,10 +37,10 @@ export default function Header({ user, onLogout, isDark, onToggleTheme }) {
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                NyayaSahayak
+                Nyaay Sahayak
               </h1>
               <p className="text-indigo-200 dark:text-slate-300 text-sm mt-0.5">
-                AI-Powered Legal Case Analysis for Domestic Violence Cases
+              Janta ki Seva mein Samarpit
               </p>
             </div>
           </div>
