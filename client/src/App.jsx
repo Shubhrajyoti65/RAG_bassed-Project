@@ -21,7 +21,7 @@ function App() {
   const [history, setHistory] = useState([]);
   const [isDark, setIsDark] = useState(false);
 
-  const { result, loading, error, analyze, reset, loadSavedResult } = useAnalysis();
+  const { result, loading, error, analysisTimeMs, analyze, reset, loadSavedResult } = useAnalysis();
 
   useEffect(() => {
     const cached = localStorage.getItem(AUTH_STORAGE_KEY);
@@ -151,7 +151,9 @@ function App() {
             <div className="space-y-6">
               {loading && <LoadingSpinner isDark={isDark} />}
               {error && <ErrorAlert message={error} onDismiss={reset} isDark={isDark} />}
-              {result && <ResultsPanel result={result} isDark={isDark} />}
+              {result && (
+                <ResultsPanel result={result} isDark={isDark} analysisTimeMs={analysisTimeMs} />
+              )}
 
               {!loading && !error && !result && (
                 <div className="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-gray-100 dark:border-slate-800 p-8 text-center">
