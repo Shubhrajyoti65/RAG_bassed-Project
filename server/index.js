@@ -11,14 +11,7 @@ const analyzeRoute = require("./routes/analyzeRoute");
 const authRoute = require("./routes/authRoute");
 const historyRoute = require("./routes/historyRoute");
 const errorHandler = require("./middleware/errorHandler");
-const vectorStoreInstance = require("./vectorStore/instance");
-const { loadCaseDataset } = require("./services/caseDatasetService");
 const { connectMongo } = require("./services/mongoService");
-
-if (!config.GEMINI_API_KEY) {
-  console.error("GEMINI_API_KEY is missing in .env");
-  process.exit(1);
-}
 
 if (config.JWT_SECRET === "change-this-in-production") {
   console.warn(
@@ -40,14 +33,6 @@ app.use(errorHandler);
 
 async function start() {
   await connectMongo();
-  const caseDataset = loadCaseDataset();
-
-  console.log("Initializing vector store...");
-
-  await vectorStoreInstance.initialize(caseDataset);
-
-  console.log("Vector store initialized");
-  console.log("Embedding model:", config.EMBEDDING_MODEL);
 
   const server = app.listen(config.PORT, () => {
     console.log(`NyayaSahayak server running on port ${config.PORT}`);

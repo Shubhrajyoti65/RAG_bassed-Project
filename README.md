@@ -1,166 +1,199 @@
-# NyayaSahayak Website - Initialization Guide
+# NyayaSahayak - Hybrid RAG Setup Guide
 
-This project has two parts:
+NyayaSahayak now uses a hybrid architecture:
 
-- `client` (React + Vite)
-- `server` (Node.js + Express + Gemini API + MongoDB)
+- client: React + Vite
+- server: Node.js + Express + MongoDB (auth, routing, PDF extraction, history)
+- rag_service: Python + FastAPI + LangChain + FAISS + SentenceTransformers (RAG)
+
+Node handles API/auth/upload. Python handles retrieval and generation.
 
 ## 1. Prerequisites
 
-Install these first:
-
 - Node.js 18+ and npm
+- Python 3.10+ (project currently tested with 3.13)
 - MongoDB (local or remote URI)
-- A Google Gemini API key
+- Google Gemini API key
 
-## 2. Clone / Open Project
+## 2. Project Structure
 
-Open this folder in VS Code:
+- client/
+- server/
+- rag_service/
 
-- `mini project`
+## 3. Environment
 
-## 3. Setup Backend (server)
-
-Open a terminal in the `server` folder and run:
-
-```bash
-npm install
-```
-
-Create a file named `.env` inside `server/` with the following values:
+Create server/.env with values like:
 
 ```env
 PORT=3001
-GEMINI_API_KEY=your_gemini_api_key_here
-EMBEDDING_MODEL=gemini-embedding-001
-GENERATION_MODEL=gemini-2.0-flash
-ENABLE_FALLBACK_ANALYSIS=true
 JWT_SECRET=replace_with_a_strong_secret
 JWT_EXPIRES_IN=7d
 MONGODB_URI=mongodb://127.0.0.1:27017
 MONGODB_DB_NAME=nyayasahayak
+
+# Used by Python rag_service at runtime
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Optional Node -> Python endpoint override
+PYTHON_RAG_URL=http://localhost:8000/analyze
 ```
 
-Start backend:
+Notes:
+
+- Node no longer uses local embedding or prompt-generation config.
+- Python service requires GEMINI_API_KEY in process environment.
+
+## 4. Install Dependencies
+
+### Node (server)
 
 ```bash
-npm run dev
-```
-
-Backend health check:
-
-- http://localhost:3001/api/health
-
-## 4. Setup Frontend (client)
-
-Open another terminal in the `client` folder and run:
-
-```bash
+cd server
 npm install
+```
+
+### Node (client)
+
+```bash
+cd client
+npm install
+```
+
+### Python (rag_service)
+
+From project root:
+
+```bash
+.venv\Scripts\python.exe -m pip install -r rag_service/requirements.txt
+```
+
+If .venv does not exist, create it first and then install.
+
+## 5. Build FAISS Index (One-time or after data updates)
+
+From project root:
+
+```bash
+.venv\Scripts\python.exe -u rag_service/ingest.py
+```
+
+This creates:
+
+- rag_service/faiss_index/index.faiss
+- rag_service/faiss_index/index.pkl
+
+Data source for ingestion:
+
+- server/data/sampleCases.js
+- server/data/importedCases.json
+
+Chunking and embeddings:
+
+- chunk size: 700
+- overlap: 100
+- embeddings: all-MiniLM-L6-v2
+
+## 6. Run Services
+
+Start Python RAG API first, then Node, then client.
+
+### 6.1 Start Python RAG API (Windows cmd)
+
+```cmd
+for /f "tokens=1,* delims==" %A in ('findstr /B /C:"GEMINI_API_KEY=" server\.env') do set GEMINI_API_KEY=%B && .venv\Scripts\python.exe -m uvicorn rag_service.app:app --host 127.0.0.1 --port 8000
+```
+
+### 6.2 Start Node API
+
+```bash
+cd server
+npm start
+```
+
+### 6.3 Start Frontend
+
+```bash
+cd client
 npm run dev
 ```
 
-Frontend runs at:
+## 7. Request Flow (Current)
 
-- http://localhost:5173
+1. User submits text or PDF from frontend.
+2. Node endpoint POST /api/analyze validates auth and payload.
+3. If file is PDF, Node extracts text in server/services/pdfService.js.
+4. Node sends text to Python POST /analyze.
+5. Python RAG pipeline:
+   - loads FAISS index
+   - retrieves top-k chunks (k=5)
+   - calls LLM with strict JSON prompt (temperature=0)
+6. Python returns structured JSON.
+7. Node returns JSON to frontend and stores history.
 
-The Vite proxy is already configured so frontend `/api` calls go to `http://localhost:3001`.
+## 8. Required Output Schema
 
-## 5. First Run Flow
+Python returns JSON with this shape:
 
-1. Open `http://localhost:5173`
-2. Create an account (Sign Up)
-3. Login
-4. Submit case text or upload a PDF
-5. View generated legal analysis and history
+```json
+{
+  "summary": "...",
+  "legalProvisions": [
+    {
+      "section": "...",
+      "act": "...",
+      "relevance": "..."
+    }
+  ],
+  "similarCases": [
+    {
+      "caseTitle": "...",
+      "year": 2020,
+      "caseNumber": "...",
+      "similarityScore": 0,
+      "keyParallels": "...",
+      "decision": "..."
+    }
+  ],
+  "disclaimer": "..."
+}
+```
 
-## 6. Common Issues
+## 9. Add New Case Files
 
-- `GEMINI_API_KEY is missing in .env`:
-  Add a valid key in `server/.env`.
-- `Port 3001 is already in use`:
-  Change `PORT` in `server/.env` or stop the process using that port.
-- Mongo connection errors:
-  Verify `MONGODB_URI` and that MongoDB is running.
-- API calls fail from frontend:
-  Make sure backend is running before starting analysis.
+To add more case documents:
 
-## 7. Production Notes
-
-- Set a strong `JWT_SECRET`
-- Restrict CORS origins
-- Use secure MongoDB credentials
-- Run with `npm start` on server after testing
-
-## 8. Architecture (Node.js RAG Pipeline)
-
-This project implements RAG in the Node.js backend (`server`) using Express + Gemini models.
-
-### Request Path
-
-1. User sends case details (text or PDF) from the frontend.
-2. Backend endpoint `/api/analyze` validates auth and input.
-3. If input is PDF, text is extracted before analysis.
-4. Query text is embedded and matched against stored legal case embeddings.
-5. Top similar cases are injected into a structured prompt.
-6. Gemini generates JSON analysis (summary, provisions, similar cases, disclaimer).
-7. Analysis is saved to user history and returned to the client.
-
-### Retrieval Layer
-
-- Sample legal cases are embedded once during startup.
-- Vectors are cached in `server/vectorStore/vectorData.json`.
-- Similarity search uses cosine similarity over embedding vectors.
-
-### Generation Layer
-
-- Embedding model default: `gemini-embedding-001`
-- Generation model default: `gemini-2.0-flash`
-- The generation response is forced/parsing-validated as JSON.
-
-### Fallback Behavior
-
-If vector search or model quota/rate limits fail (and `ENABLE_FALLBACK_ANALYSIS=true`), backend returns a retrieval-based fallback analysis so the app remains usable.
-
-### Key Backend Files
-
-- `server/routes/analyzeRoute.js` - analyze endpoint, validation, save history
-- `server/services/ragService.js` - orchestrates retrieval + prompt + generation/fallback
-- `server/services/geminiService.js` - embedding + generation calls to Gemini
-- `server/vectorStore/VectorStore.js` - vector cache, cosine search
-- `server/prompts/analysisPrompt.js` - final prompt template
-
-## 9. Add Cases From PDF/TXT Files
-
-If you have raw case files in PDF or TXT format, use the importer pipeline:
-
-1. Copy files to `server/data/import/`
-2. Run importer from `server/`:
+1. Put files in server/data/import/
+2. Run:
 
 ```bash
+cd server
 npm run import:cases
 ```
 
-This generates/updates `server/data/importedCases.json`.
-
-3. Restart backend:
+3. Re-run Python ingestion:
 
 ```bash
-npm run dev
+cd ..
+.venv\Scripts\python.exe -u rag_service/ingest.py
 ```
 
-The backend now resumes embedding automatically from cached progress.
+## 10. Troubleshooting
 
-4. Optional full rebuild (only when needed):
+- 500 with error "GEMINI_API_KEY is required":
+  Python service is running without GEMINI_API_KEY in its environment.
+- 500 with quota/rate-limit errors:
+  Gemini quota is exhausted. Wait/reset quota or use a different key/model tier.
+- 503 from Node analyze:
+  FAISS index not found. Run rag_service/ingest.py.
+- Node healthy but analyze fails:
+  Ensure Python service is running on http://localhost:8000.
 
-- Delete `server/vectorStore/vectorData.json` only if you want a complete re-embed from zero.
+## 11. Key Files
 
-### Notes
-
-- Imported entries are merged with `server/data/sampleCases.js` at startup.
-- If embedding quota is hit mid-run, restart later and embedding resumes from remaining cases.
-- For best retrieval quality, review imported records in `server/data/importedCases.json` and improve:
-  - `caseTitle`
-  - `legalReasoning`
-  - `decision`
-  - `relevantSections`
+- server/routes/analyzeRoute.js
+- server/services/ragService.js
+- server/services/pdfService.js
+- rag_service/app.py
+- rag_service/rag_pipeline.py
+- rag_service/ingest.py
