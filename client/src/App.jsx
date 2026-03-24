@@ -175,8 +175,8 @@ function App() {
                   </h3>
                   <p className="text-sm text-gray-400 dark:text-slate-400 max-w-sm mx-auto">
                     Enter a domestic violence case description or upload a PDF
-                    document to get AI-powered analysis with similar Allahabad
-                    High Court judgments.
+                    document to get AI-powered analysis with similar High Court
+                    judgments.
                   </p>
                 </div>
               )}
@@ -192,8 +192,8 @@ function App() {
       <footer className="border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-auto">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <p className="text-xs text-gray-400 dark:text-slate-400 text-center">
-            Nyaay Sahayak &mdash; AI-Powered Legal Case Analysis Tool |
-            Allahabad High Court Domestic Violence Cases | For Educational
+            Nyaay Sahayak &mdash;Legal Case Analysis Tool |
+            High Court Domestic Violence Cases | For Educational
             Purposes Only
           </p>
         </div>

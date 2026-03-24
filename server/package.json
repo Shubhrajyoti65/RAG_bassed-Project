@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node scripts/freePort.js && nodemon index.js",
+    "dev": "nodemon index.js",
     "import:cases": "node scripts/importCases.js"
   },
   "dependencies": {
@@ -19,7 +19,6 @@
     "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
-    "kill-port": "^2.0.1",
     "nodemon": "^3.1.0"
   }
 }

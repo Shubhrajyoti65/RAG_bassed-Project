@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -21,7 +20,7 @@ from sentence_transformers import SentenceTransformer
 CHUNK_SIZE = 700
 CHUNK_OVERLAP = 100
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
-GENERATION_MODEL_NAME = "gemini-2.0-flash"
+GENERATION_MODEL_NAME = "gemini-2.5-flash"
 DEFAULT_TOP_K = 5
 
 _EMBEDDING_FUNCTION: SentenceTransformerEmbeddingFunction | None = None
@@ -29,42 +28,52 @@ _VECTOR_STORE_CACHE: dict[str, FAISS] = {}
 _LLM_CACHE: dict[tuple[str, str], ChatGoogleGenerativeAI] = {}
 
 PROMPT_TEMPLATE = ChatPromptTemplate.from_template(
-        """
-You are Nyaay Sahayak, an AI legal research assistant for Allahabad High Court domestic violence matters.
+    """
+You are a highly precise AI legal research assistant specializing in domestic violence matters before the High Court.
 
-Rules:
-1. You are not a lawyer and must not provide legal advice.
-2. Use only the retrieved context and user text.
-3. If uncertain, state limits cautiously while still filling required fields.
-4. Return ONLY valid JSON, with no markdown and no extra text.
+<rules>
+1. NO LEGAL ADVICE: You are an AI, not an advocate. You must strictly synthesize information and include a standard legal disclaimer.
+2. STRICT GROUNDING: You must rely EXCLUSIVELY on the provided `<retrieved_context>`. Do not incorporate outside knowledge, and absolutely do not hallucinate or invent case laws.
+3. HANDLING MISSING INFO: If the retrieved context does not contain relevant legal provisions or similar cases, leave those arrays empty ([]). 
+4. OUTPUT FORMAT: Return ONLY valid JSON. Do not include markdown formatting (like ```json), and do not include any conversational filler before or after the JSON block.
+</rules>
 
-Required JSON schema:
+<retrieved_context>
+{retrieved_context}
+</retrieved_context>
+
+<user_case>
+{user_case}
+</user_case>
+
+<instructions>
+Analyze the `<user_case>` against the `<retrieved_context>`. 
+Generate a JSON response strictly adhering to the following structure:
 {{
-    "summary": "...",
+    "analysis": "Briefly outline your internal reasoning here before filling the specific fields below. Explain why the context matches the case.",
+    "summary": "Concise, objective summary of the user's situation.",
     "legalProvisions": [
-        {{"section": "...", "act": "...", "relevance": "..."}}
+        {{
+            "section": "...", 
+            "act": "...", 
+            "relevance": "Explain specifically how this applies to the user case based on the context"
+        }}
     ],
     "similarCases": [
         {{
             "caseTitle": "...",
             "year": 2020,
             "caseNumber": "...",
-            "similarityScore": 0,
+            "similarityScore": "Integer from 0 to 100 (percentage match)",
             "keyParallels": "...",
             "decision": "..."
         }}
     ],
-    "disclaimer": "..."
+    "disclaimer": "Standard disclaimer stating this is AI-generated research, not legal advice."
 }}
-
-User case text:
-{user_case}
-
-Retrieved context:
-{retrieved_context}
-""".strip()
+</instructions>
+    """.strip()
 )
-
 
 @dataclass(frozen=True)
 class IngestConfig:
@@ -107,41 +116,16 @@ def build_and_persist_faiss_index(config: IngestConfig) -> tuple[int, int]:
 
 
 def load_case_records(root_dir: Path) -> list[dict]:
-    sample_cases = load_sample_cases_via_node(root_dir)
-    imported_cases = load_imported_cases(root_dir)
-
     merged = {}
-    for item in [*sample_cases, *imported_cases]:
+    for item in load_imported_cases(root_dir):
         case_number = str(item.get("caseNumber", "")).strip()
         if not case_number:
             continue
         merged[case_number] = item
 
-    # Keep only likely Allahabad HC domestic-violence records.
+    # Keep only likely High Court domestic-violence records.
     filtered = [item for item in merged.values() if is_target_case(item)]
     return filtered
-
-
-def load_sample_cases_via_node(root_dir: Path) -> list[dict]:
-    sample_file = root_dir / "server" / "data" / "sampleCases.js"
-    if not sample_file.exists():
-        raise FileNotFoundError(f"Missing sample case dataset: {sample_file}")
-
-    node_snippet = (
-        "const d=require(process.argv[1]);"
-        "process.stdout.write(JSON.stringify(Array.isArray(d)?d:[]));"
-    )
-
-    result = subprocess.run(
-        ["node", "-e", node_snippet, str(sample_file)],
-        cwd=str(root_dir),
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-
-    parsed = json.loads(result.stdout or "[]")
-    return parsed if isinstance(parsed, list) else []
 
 
 def load_imported_cases(root_dir: Path) -> list[dict]:
@@ -230,7 +214,8 @@ def analyze_case_text(case_text: str, config: QueryConfig) -> dict:
                 retrieved_context=context,
             )
         )
-        return parse_model_json(str(response.content))
+        parsed = parse_model_json(str(response.content))
+        return normalize_analysis_output(parsed)
     except Exception as error:
         if is_quota_or_busy_error(error):
             return build_quota_fallback_analysis(case_text, retrieved_docs)
@@ -316,6 +301,43 @@ def parse_model_json(raw_text: str) -> dict:
         raise ValueError("LLM returned invalid JSON")
 
 
+def normalize_analysis_output(payload: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise ValueError("LLM response must be a JSON object")
+
+    normalized = dict(payload)
+
+    raw_provisions = normalized.get("legalProvisions", [])
+    if isinstance(raw_provisions, list):
+        normalized["legalProvisions"] = raw_provisions
+
+    similar_cases = normalized.get("similarCases", [])
+    if isinstance(similar_cases, list):
+        for item in similar_cases:
+            if not isinstance(item, dict):
+                continue
+            item["similarityScore"] = normalize_similarity_score(item.get("similarityScore"))
+
+    return normalized
+
+
+def normalize_similarity_score(value) -> int:
+    try:
+        score = float(value)
+    except (TypeError, ValueError):
+        return 0
+
+    # Handle 0-1 scale (probability-like)
+    if score <= 1:
+        score *= 100
+    # Handle 1-10 scale (LLM may output despite prompt)
+    elif score <= 10:
+        score *= 10
+
+    score = max(0, min(100, score))
+    return int(round(score))
+
+
 def is_quota_or_busy_error(error: Exception) -> bool:
     message = str(error).lower()
     return (
@@ -347,7 +369,7 @@ def build_quota_fallback_analysis(case_text: str, docs: list[Document]) -> dict:
                 "caseNumber": metadata.get("caseNumber", "N/A"),
                 "similarityScore": similarity_score,
                 "keyParallels": (
-                    "This result was retrieved from similar Allahabad High Court domestic violence "
+                    "This result was retrieved from similar High Court domestic violence "
                     f"materials. Context snapshot: {snippet}"
                 ),
                 "decision": metadata.get("decision", "Decision details not available."),
@@ -391,7 +413,7 @@ def build_fallback_summary(case_text: str, docs: list[Document]) -> str:
     ]
     titles_text = "; ".join(case_titles)
     return (
-        f"{short_user_summary} Based on retrieved Allahabad High Court precedents ({titles_text}), "
+        f"{short_user_summary} Based on retrieved High Court precedents ({titles_text}), "
         "the facts may engage protections, residence rights, maintenance, compensation, or related "
         "reliefs depending on evidence and procedural posture."
     )

@@ -85,7 +85,6 @@ This creates:
 
 Data source for ingestion:
 
-- server/data/sampleCases.js
 - server/data/importedCases.json
 
 Chunking and embeddings:
@@ -101,7 +100,8 @@ Start Python RAG API first, then Node, then client.
 ### 6.1 Start Python RAG API (Windows cmd)
 
 ```cmd
-for /f "tokens=1,* delims==" %A in ('findstr /B /C:"GEMINI_API_KEY=" server\.env') do set GEMINI_API_KEY=%B && .venv\Scripts\python.exe -m uvicorn rag_service.app:app --host 127.0.0.1 --port 8000
+for /f "tokens=1,* delims==" %A in ('findstr /B /C:"GEMINI_API_KEY=" server\.env') do set GEMINI_API_KEY=%B &&
+".venv\Scripts\python.exe -m uvicorn rag_service.app:app --host 127.0.0.1 --port 8000"
 ```
 
 ### 6.2 Start Node API

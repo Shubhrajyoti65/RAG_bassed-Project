@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("path");
-const sampleCases = require("../data/sampleCases");
 
 const IMPORTED_CASES_PATH = path.join(
   __dirname,
@@ -10,8 +9,7 @@ const IMPORTED_CASES_PATH = path.join(
 );
 
 function loadCaseDataset() {
-  const importedCases = loadImportedCases();
-  return [...sampleCases, ...importedCases];
+  return loadImportedCases();
 }
 
 function loadImportedCases() {

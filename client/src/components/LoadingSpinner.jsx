@@ -34,7 +34,7 @@ export default function LoadingSpinner() {
       <div className="text-center">
         <p className="text-gray-800 dark:text-slate-100 font-semibold">Analyzing your case...</p>
         <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
-          Searching similar Allahabad High Court judgments and generating analysis
+          Searching similar High Court judgments and generating analysis
         </p>
         <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 mt-3">
           Estimated time left: {formatSeconds(remainingSeconds)}

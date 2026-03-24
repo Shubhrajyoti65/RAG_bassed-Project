@@ -14,7 +14,7 @@ export default function Disclaimer() {
           />
         </svg>
         <p className="text-sm text-amber-800 dark:text-amber-200">
-          <strong>Disclaimer:</strong> Nyaay Sahayak is an AI-powered research
+          <strong>Disclaimer:</strong> Nyaay Sahayak is a research
           tool for informational and educational purposes only. It does{" "}
           <strong>not</strong> provide legal advice. Please consult a qualified
           advocate for legal guidance.

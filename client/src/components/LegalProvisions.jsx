@@ -1,4 +1,26 @@
+import { useState } from "react";
+
+function normalizeText(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function getConciseDescription(text, maxLength = 180) {
+  const normalized = normalizeText(text);
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+
+  const sentenceEnd = normalized.lastIndexOf(". ", maxLength);
+  if (sentenceEnd >= 100) {
+    return `${normalized.slice(0, sentenceEnd + 1)}...`;
+  }
+
+  return `${normalized.slice(0, maxLength).trim()}...`;
+}
+
 export default function LegalProvisions({ provisions }) {
+  const [expandedIndex, setExpandedIndex] = useState(null);
+
   if (!provisions || provisions.length === 0) return null;
 
   return (
@@ -13,22 +35,37 @@ export default function LegalProvisions({ provisions }) {
       </div>
       <div className="divide-y divide-gray-50 dark:divide-slate-800">
         {provisions.map((p, i) => (
-          <div key={i} className="px-6 py-4">
+          <button
+            type="button"
+            key={i}
+            className="w-full text-left px-6 py-4 hover:bg-emerald-50/40 dark:hover:bg-emerald-900/10 transition-colors"
+            onClick={() => setExpandedIndex(expandedIndex === i ? null : i)}
+            aria-expanded={expandedIndex === i}
+          >
             <div className="flex items-start gap-3">
               <span className="shrink-0 w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-200 text-xs font-bold flex items-center justify-center mt-0.5">
                 {i + 1}
               </span>
-              <div>
+              <div className="w-full">
                 <p className="font-semibold text-gray-800 dark:text-slate-100 text-sm">
                   {p.section}
                   <span className="ml-2 text-xs font-normal text-gray-500 dark:text-slate-300 bg-gray-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
                     {p.act}
                   </span>
                 </p>
-                <p className="text-sm text-gray-600 dark:text-slate-300 mt-1">{p.relevance}</p>
+                <p className="text-sm text-gray-600 dark:text-slate-300 mt-1">
+                  {expandedIndex === i
+                    ? normalizeText(p.relevance)
+                    : getConciseDescription(p.relevance)}
+                </p>
+                <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300 mt-2">
+                  {expandedIndex === i
+                    ? "Click to collapse full description"
+                    : "Click to view full description"}
+                </p>
               </div>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>
