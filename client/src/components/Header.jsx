@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 export default function Header({ user, onLogout, isDark, onToggleTheme }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -16,11 +17,11 @@ export default function Header({ user, onLogout, isDark, onToggleTheme }) {
   }, []);
 
   return (
-    <header className="bg-linear-to-r from-indigo-900 via-indigo-800 to-purple-900 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-white shadow-lg">
+    <header className="sticky top-0 z-50 bg-brand-navy dark:bg-brand-dark border-b-4 border-brand-peach dark:border-brand-peach/60 text-white shadow-lg transition-colors">
       <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm">
+            <Link to="/" className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors">
               <svg
                 className="w-7 h-7 text-amber-300"
                 fill="none"
@@ -34,16 +35,24 @@ export default function Header({ user, onLogout, isDark, onToggleTheme }) {
                   d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"
                 />
               </svg>
-            </div>
+            </Link>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                Nyaay Sahayak
-              </h1>
+              <Link to="/">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight hover:text-brand-peach transition-colors">
+                  Nyaay Sahayak
+                </h1>
+              </Link>
               <p className="text-indigo-200 dark:text-slate-300 text-sm mt-0.5">
               Janta ki Seva mein Samarpit
               </p>
             </div>
           </div>
+
+          <nav className="hidden md:flex items-center gap-6 mx-auto bg-black/20 px-6 py-2 rounded-full border border-white/10">
+            <Link to="/" className="text-white/90 hover:text-brand-peach transition-colors text-sm font-semibold tracking-wide">Home</Link>
+            <Link to="/analyze" className="text-white/90 hover:text-brand-peach transition-colors text-sm font-semibold tracking-wide">Analyze</Link>
+            {user && <Link to="/dashboard" className="text-white/90 hover:text-brand-peach transition-colors text-sm font-semibold tracking-wide">Dashboard</Link>}
+          </nav>
 
           <div className="flex items-center gap-2">
             <button
@@ -116,13 +125,14 @@ export default function Header({ user, onLogout, isDark, onToggleTheme }) {
             )}
 
             {!user && (
-              <button
-                type="button"
-                className="text-xs text-amber-200/80"
-                disabled
-              >
-                Guest
-              </button>
+              <div className="flex items-center gap-3 ml-2">
+                <Link to="/login" className="text-sm font-semibold text-white/90 hover:text-white transition-colors">
+                  Login
+                </Link>
+                <Link to="/login" className="text-sm font-bold bg-white dark:bg-slate-800 text-brand-navy dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700 px-4 py-1.5 rounded-full shadow-sm transition-all hidden sm:block border border-transparent dark:border-slate-700">
+                  Sign Up
+                </Link>
+              </div>
             )}
           </div>
         </div>
