@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function Header({ user, onLogout, isDark, onToggleTheme }) {
   const [menuOpen, setMenuOpen] = useState(false);

@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 
-export default function InputPanel({ onAnalyze, loading, isDark }) {
+export default function InputPanel({ onAnalyze, loading }) {
   const [text, setText] = useState("");
   const [file, setFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);

@@ -5,9 +5,7 @@ import ResultsPanel from "../components/ResultsPanel";
 import { useEffect, useState } from "react";
 
 export default function Analyze({
-  user,
   token,
-  history,
   loadUserHistory,
   isDark,
   result,
@@ -16,30 +14,20 @@ export default function Analyze({
   analysisTimeMs,
   analyze,
   reset,
-  loadSavedResult,
 }) {
-  async function handleAnalyze(payload) {
-    await analyze({ ...payload, token });
-    await loadUserHistory();
-  }
-
-  function handleHistorySelect(item) {
-    loadSavedResult(item.analysis);
-  }
-
   const [toast, setToast] = useState(null);
 
-  useEffect(() => {
-    if (result && !loading) {
-      setToast({ message: "Analysis generated successfully!", type: "success" });
-    }
-  }, [result, loading]);
+  async function handleAnalyze(payload) {
+    const outcome = await analyze({ ...payload, token });
+    await loadUserHistory();
 
-  useEffect(() => {
-    if (error && !loading) {
-      setToast({ message: "Analysis failed. See error for details.", type: "error" });
+    if (outcome?.ok) {
+      setToast({ message: "Analysis generated successfully!", type: "success" });
+      return;
     }
-  }, [error, loading]);
+
+    setToast({ message: "Analysis failed. See error for details.", type: "error" });
+  }
 
   useEffect(() => {
     if (toast) {
@@ -54,12 +42,11 @@ export default function Analyze({
         <InputPanel
           onAnalyze={handleAnalyze}
           loading={loading}
-          isDark={isDark}
         />
       </div>
 
       <div className="space-y-6">
-        {loading && <LoadingSpinner isDark={isDark} />}
+        {loading && <LoadingSpinner />}
         {error && <ErrorAlert message={error} onDismiss={reset} isDark={isDark} />}
         {result && (
           <ResultsPanel

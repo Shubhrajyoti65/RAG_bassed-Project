@@ -17,8 +17,11 @@ export function useAnalysis() {
       const data = await submitAnalysis({ text, file, token });
       setResult(data);
       setAnalysisTimeMs(Math.max(0, Math.round(performance.now() - startedAt)));
+      return { ok: true, data };
     } catch (err) {
-      setError(err.message || "An unexpected error occurred.");
+      const message = err.message || "An unexpected error occurred.";
+      setError(message);
+      return { ok: false, error: message };
     } finally {
       setLoading(false);
     }

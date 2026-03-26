@@ -15,7 +15,6 @@ export default function LoadingSpinner() {
   const [remainingSeconds, setRemainingSeconds] = useState(ESTIMATED_SECONDS);
 
   useEffect(() => {
-    setRemainingSeconds(ESTIMATED_SECONDS);
     const timer = setInterval(() => {
       setRemainingSeconds((prev) => Math.max(0, prev - 1));
     }, 1000);

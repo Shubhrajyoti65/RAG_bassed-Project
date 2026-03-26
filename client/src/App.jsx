@@ -31,17 +31,51 @@ function App() {
       return;
     }
 
-    try {
-      const parsed = JSON.parse(cached);
-      if (!parsed?.token) {
-        return;
-      }
+    let isActive = true;
 
-      setToken(parsed.token);
-      hydrateSession(parsed.token);
-    } catch (_err) {
-      localStorage.removeItem(AUTH_STORAGE_KEY);
+    async function restoreSession() {
+      try {
+        const parsed = JSON.parse(cached);
+        if (!parsed?.token) {
+          return;
+        }
+
+        setAuthLoading(true);
+        setToken(parsed.token);
+
+        const currentUser = await getCurrentUser(parsed.token);
+        if (!isActive) {
+          return;
+        }
+
+        setUser(currentUser);
+        const list = await fetchHistory(parsed.token);
+        if (!isActive) {
+          return;
+        }
+
+        setHistory(list);
+      } catch {
+        if (!isActive) {
+          return;
+        }
+
+        setToken("");
+        setUser(null);
+        setHistory([]);
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+      } finally {
+        if (isActive) {
+          setAuthLoading(false);
+        }
+      }
     }
+
+    restoreSession();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -54,19 +88,6 @@ function App() {
   useEffect(() => {
     localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
   }, [isDark]);
-
-  async function hydrateSession(sessionToken) {
-    setAuthLoading(true);
-    try {
-      const currentUser = await getCurrentUser(sessionToken);
-      setUser(currentUser);
-      await loadUserHistory(sessionToken);
-    } catch (_err) {
-      clearSession();
-    } finally {
-      setAuthLoading(false);
-    }
-  }
 
   function persistSession(sessionToken, sessionUser) {
     setToken(sessionToken);
@@ -121,11 +142,6 @@ function App() {
     }
   }
 
-  async function handleAnalyze(payload) {
-    await analyze({ ...payload, token });
-    await loadUserHistory();
-  }
-
   function handleHistorySelect(item) {
     loadSavedResult(item.analysis);
     navigate("/analyze");
@@ -164,7 +180,6 @@ function App() {
                 analysisTimeMs={analysisTimeMs} 
                 analyze={analyze} 
                 reset={reset} 
-                loadSavedResult={loadSavedResult} 
               />
             ) : <Navigate to="/login" state={{ from: "/analyze" }} replace />
           } />
