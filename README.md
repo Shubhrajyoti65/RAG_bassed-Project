@@ -35,8 +35,17 @@ MONGODB_DB_NAME=nyayasahayak
 # Used by Python rag_service at runtime
 GEMINI_API_KEY=your_gemini_api_key_here
 
+# Google auth (required for Google login/signup)
+GOOGLE_CLIENT_ID=your_google_oauth_web_client_id
+
 # Optional Node -> Python endpoint override
 PYTHON_RAG_URL=http://localhost:8000/analyze
+```
+
+Create client/.env with:
+
+```env
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_web_client_id
 ```
 
 Notes:

@@ -1,7 +1,10 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { OAuth2Client } = require("google-auth-library");
 const config = require("../config");
 const User = require("../models/User");
+
+let googleClient;
 
 function normalizeEmail(email) {
   return String(email || "")
@@ -14,11 +17,19 @@ function toPublicUser(user) {
     id: String(user._id),
     name: user.name,
     email: user.email,
+    authProvider: user.authProvider || "local",
     createdAt:
       user.createdAt instanceof Date
         ? user.createdAt.toISOString()
         : user.createdAt,
   };
+}
+
+function getGoogleClient() {
+  if (!googleClient) {
+    googleClient = new OAuth2Client(config.GOOGLE_CLIENT_ID);
+  }
+  return googleClient;
 }
 
 async function signup({ name, email, password }) {
@@ -49,6 +60,7 @@ async function signup({ name, email, password }) {
     name: safeName,
     email: safeEmail,
     passwordHash,
+    authProvider: "local",
   });
 
   return toPublicUser(user);
@@ -66,11 +78,95 @@ async function login({ email, password }) {
     throw error;
   }
 
+  if (!user.passwordHash) {
+    const error = new Error(
+      "This account uses Google sign-in. Continue with Google."
+    );
+    error.statusCode = 401;
+    throw error;
+  }
+
   const ok = await bcrypt.compare(safePassword, user.passwordHash);
   if (!ok) {
     const error = new Error("Invalid email or password.");
     error.statusCode = 401;
     throw error;
+  }
+
+  return toPublicUser(user);
+}
+
+async function authenticateWithGoogle({ idToken }) {
+  const safeIdToken = String(idToken || "").trim();
+
+  if (!config.GOOGLE_CLIENT_ID) {
+    const error = new Error(
+      "Google authentication is not configured on server."
+    );
+    error.statusCode = 500;
+    throw error;
+  }
+
+  if (!safeIdToken) {
+    const error = new Error("Google credential is required.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const client = getGoogleClient();
+  let ticket;
+  try {
+    ticket = await client.verifyIdToken({
+      idToken: safeIdToken,
+      audience: config.GOOGLE_CLIENT_ID,
+    });
+  } catch {
+    const error = new Error("Invalid Google credential.");
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const payload = ticket.getPayload() || {};
+  const email = normalizeEmail(payload.email);
+  const googleId = String(payload.sub || "").trim();
+  const emailVerified = Boolean(payload.email_verified);
+  const displayName = String(payload.name || "").trim();
+
+  if (!email || !googleId || !emailVerified) {
+    const error = new Error("Unable to verify Google account.");
+    error.statusCode = 401;
+    throw error;
+  }
+
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    user = await User.create({
+      name: displayName || email.split("@")[0],
+      email,
+      authProvider: "google",
+      googleId,
+    });
+
+    return toPublicUser(user);
+  }
+
+  let shouldSave = false;
+  if (!user.googleId) {
+    user.googleId = googleId;
+    shouldSave = true;
+  }
+  if (!user.authProvider && !user.passwordHash) {
+    user.authProvider = "google";
+    shouldSave = true;
+  }
+  if (!user.name && displayName) {
+    user.name = displayName;
+    shouldSave = true;
+  }
+
+  if (shouldSave) {
+    await user.save();
   }
 
   return toPublicUser(user);
@@ -97,4 +193,11 @@ async function getUserById(userId) {
   return user ? toPublicUser(user) : null;
 }
 
-module.exports = { signup, login, issueToken, verifyToken, getUserById };
+module.exports = {
+  signup,
+  login,
+  authenticateWithGoogle,
+  issueToken,
+  verifyToken,
+  getUserById,
+};

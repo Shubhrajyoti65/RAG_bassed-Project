@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Header({ user, onLogout, isDark, onToggleTheme }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -8,6 +8,7 @@ export default function Header({ user, onLogout, isDark, onToggleTheme }) {
   const [activeSection, setActiveSection] = useState("/");
   const profileMenuRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const isOnLogin = location.pathname === "/login";
@@ -83,9 +84,29 @@ export default function Header({ user, onLogout, isDark, onToggleTheme }) {
     { label: "Features", to: "/#features" },
     { label: "About Us", to: "/#about" },
     { label: "Contact Us", to: "/#contact" },
+    { label: "Privacy", to: "/privacy-policy" },
+    { label: "Terms", to: "/terms-of-service" },
   ];
 
   function handleNavClick(e, to) {
+    if (to === "/") {
+      e.preventDefault();
+
+      if (location.pathname !== "/") {
+        navigate("/");
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: "auto" });
+          setActiveSection("/");
+        }, 0);
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        setActiveSection("/");
+      }
+
+      setMobileMenuOpen(false);
+      return;
+    }
+
     if (to.startsWith("/#")) {
       e.preventDefault();
       const id = to.substring(2);

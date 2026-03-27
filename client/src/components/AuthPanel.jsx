@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const initialForm = {
@@ -7,17 +7,117 @@ const initialForm = {
   password: "",
 };
 
-export default function AuthPanel({ onLogin, onSignup, loading }) {
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+
+export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState(searchParams.get("tab") === "signup" ? "signup" : "login");
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
+  const [googleAvailable, setGoogleAvailable] = useState(false);
+  const googleButtonRef = useRef(null);
+  const googleAuthRef = useRef(onGoogleAuth);
+  const googleConfigured = Boolean(GOOGLE_CLIENT_ID);
+
+  useEffect(() => {
+    googleAuthRef.current = onGoogleAuth;
+  }, [onGoogleAuth]);
 
   useEffect(() => {
     const tab = searchParams.get("tab");
     setMode(tab === "signup" ? "signup" : "login");
     setError("");
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!googleConfigured || typeof window === "undefined") {
+      setGoogleAvailable(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function handleGoogleCallback(response) {
+      if (!response?.credential) {
+        setError("Google authentication failed. Please try again.");
+        return;
+      }
+
+      if (!googleAuthRef.current) {
+        setError("Google authentication is not available right now.");
+        return;
+      }
+
+      setError("");
+      try {
+        await googleAuthRef.current(response.credential);
+      } catch (err) {
+        setError(err.message || "Google authentication failed.");
+      }
+    }
+
+    function renderGoogleButton() {
+      if (
+        cancelled
+        || !googleButtonRef.current
+        || !window.google?.accounts?.id
+      ) {
+        return;
+      }
+
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCallback,
+      });
+
+      googleButtonRef.current.innerHTML = "";
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        type: "standard",
+        shape: "pill",
+        size: "large",
+        text: "continue_with",
+        width: 320,
+        theme: "outline",
+      });
+
+      setGoogleAvailable(true);
+    }
+
+    let readyCheckTimer;
+    const existingScript = document.querySelector("script[data-google-identity='true']");
+    if (existingScript) {
+      if (window.google?.accounts?.id) {
+        renderGoogleButton();
+      } else {
+        readyCheckTimer = window.setInterval(() => {
+          if (window.google?.accounts?.id) {
+            window.clearInterval(readyCheckTimer);
+            renderGoogleButton();
+          }
+        }, 120);
+      }
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.dataset.googleIdentity = "true";
+      script.onload = renderGoogleButton;
+      script.onerror = () => {
+        if (!cancelled) {
+          setGoogleAvailable(false);
+        }
+      };
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      cancelled = true;
+      if (readyCheckTimer) {
+        window.clearInterval(readyCheckTimer);
+      }
+    };
+  }, []);
 
   function updateField(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -144,7 +244,7 @@ export default function AuthPanel({ onLogin, onSignup, loading }) {
                   </div>
                   <input type="text" value={form.name} onChange={(e) => updateField("name", e.target.value)}
                     className="w-full pl-10 bg-light-muted dark:bg-dark-surface text-light-text dark:text-dark-text rounded-xl px-4 py-3 font-body text-sm border border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all duration-200 placeholder:text-light-text-muted/60"
-                    placeholder="John Doe" disabled={loading} />
+                    placeholder="enter your full name" disabled={loading} />
                 </div>
               </div>
             )}
@@ -192,6 +292,39 @@ export default function AuthPanel({ onLogin, onSignup, loading }) {
                 <><svg className="animate-spin w-5 h-5 text-white/70" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg><span>Authenticating...</span></>
               ) : mode === "signup" ? <span>Create Account</span> : <span>Access Chambers</span>}
             </button>
+
+            <>
+              <div className="relative my-2">
+                <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                  <div className="w-full border-t border-light-border dark:border-dark-border" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="px-3 font-label text-[11px] tracking-[0.12em] uppercase text-light-text-muted dark:text-dark-text-muted bg-light-card dark:bg-dark-card">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              {googleConfigured ? (
+                <div className={`${loading ? "pointer-events-none opacity-70" : ""} flex justify-center`}>
+                  <div ref={googleButtonRef} />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setError("Google sign-in is not configured yet. Add VITE_GOOGLE_CLIENT_ID in client/.env and restart the client.")}
+                  className="w-full rounded-xl border border-light-border dark:border-dark-border bg-light-muted dark:bg-dark-surface px-4 py-3 font-label text-sm font-semibold text-light-text dark:text-dark-text hover:bg-light-card-alt dark:hover:bg-dark-card-alt transition-colors"
+                >
+                  Continue with Google
+                </button>
+              )}
+
+              {googleConfigured && !googleAvailable && (
+                <p className="text-center font-body text-xs text-light-text-muted dark:text-dark-text-muted">
+                  Google sign-in is loading...
+                </p>
+              )}
+            </>
           </form>
 
           <p className="font-body text-sm text-light-text-secondary dark:text-dark-text-secondary mt-6 text-center">
@@ -202,11 +335,6 @@ export default function AuthPanel({ onLogin, onSignup, loading }) {
             )}
           </p>
 
-          <div className="flex items-center justify-center gap-4 mt-6 pt-4 border-t border-light-border dark:border-dark-border">
-            <a href="#" className="font-label text-[11px] text-light-text-muted dark:text-dark-text-muted hover:text-primary dark:hover:text-primary-dark transition-colors">Privacy Policy</a>
-            <span className="text-light-border dark:text-dark-border">·</span>
-            <a href="#" className="font-label text-[11px] text-light-text-muted dark:text-dark-text-muted hover:text-primary dark:hover:text-primary-dark transition-colors">Terms of Service</a>
-          </div>
         </div>
       </div>
     </div>

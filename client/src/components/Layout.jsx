@@ -1,5 +1,6 @@
 import Header from "./Header";
 import Disclaimer from "./Disclaimer";
+import { Link } from "react-router-dom";
 
 export default function Layout({ children, user, onLogout, isDark, onToggleTheme }) {
   return (
@@ -29,8 +30,8 @@ export default function Layout({ children, user, onLogout, isDark, onToggleTheme
                 </span>
               </div>
               <div className="flex items-center gap-6">
-                <a href="#" className="font-label text-xs text-light-text-muted dark:text-dark-text-muted hover:text-primary dark:hover:text-primary-dark transition-colors">Privacy Policy</a>
-                <a href="#" className="font-label text-xs text-light-text-muted dark:text-dark-text-muted hover:text-primary dark:hover:text-primary-dark transition-colors">Terms of Service</a>
+                <Link to="/privacy-policy" className="font-label text-xs text-light-text-muted dark:text-dark-text-muted hover:text-primary dark:hover:text-primary-dark transition-colors">Privacy Policy</Link>
+                <Link to="/terms-of-service" className="font-label text-xs text-light-text-muted dark:text-dark-text-muted hover:text-primary dark:hover:text-primary-dark transition-colors">Terms of Service</Link>
               </div>
               <p className="font-label text-xs text-light-text-muted dark:text-dark-text-muted">
                 © 2024 Nyaay Sahayak — Janata kee seva mein samarpit

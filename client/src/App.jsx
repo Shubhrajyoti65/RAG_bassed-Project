@@ -7,9 +7,11 @@ import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Analyze from "./pages/Analyze";
 import Dashboard from "./pages/Dashboard";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import { useAnalysis } from "./hooks/useAnalysis";
 import { fetchHistory } from "./api/historyApi";
-import { getCurrentUser, loginUser, signupUser } from "./api/authApi";
+import { getCurrentUser, googleAuthUser, loginUser, signupUser } from "./api/authApi";
 
 const AUTH_STORAGE_KEY = "nyaya_auth";
 const THEME_STORAGE_KEY = "nyaya_theme";
@@ -142,6 +144,19 @@ function App() {
     }
   }
 
+  async function handleGoogleAuth(idToken) {
+    setAuthLoading(true);
+    try {
+      const payload = await googleAuthUser({ idToken });
+      persistSession(payload.token, payload.user);
+      await loadUserHistory(payload.token);
+      const from = location.state?.from || "/analyze";
+      navigate(from, { replace: true });
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
   function handleHistorySelect(item) {
     loadSavedResult(item.analysis);
     navigate("/analyze");
@@ -161,6 +176,7 @@ function App() {
               <AuthPanel
                 onLogin={handleLogin}
                 onSignup={handleSignup}
+                onGoogleAuth={handleGoogleAuth}
                 loading={authLoading}
                 isDark={isDark}
               />
@@ -188,6 +204,8 @@ function App() {
               <Dashboard history={history} onSelect={handleHistorySelect} isDark={isDark} />
             ) : <Navigate to="/login" state={{ from: "/dashboard" }} replace />
           } />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     </Layout>
