@@ -11,13 +11,13 @@ export default function ResultsPanel({ result, isDark, analysisTimeMs }) {
   const timeLabel = formatAnalysisTime(analysisTimeMs);
 
   return (
-    <div className="space-y-6 bg-light-card dark:bg-dark-card rounded-2xl shadow-sm border border-light-border dark:border-dark-border p-6 sm:p-8 relative overflow-hidden">
+    <div className="space-y-6 bg-surface rounded-2xl shadow-sm border border-border p-6 sm:p-8 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-1 gradient-primary-bg" />
 
       <div className="flex items-center gap-3 pt-2">
-        <h2 className="font-headline text-2xl font-bold text-light-text dark:text-dark-text">Analysis Results</h2>
+        <h2 className="font-headline text-2xl font-bold text-text-primary">Analysis Results</h2>
         {timeLabel && (
-          <span className="ml-auto font-label text-xs font-bold text-primary dark:text-primary-dark bg-primary/10 dark:bg-primary-dark/15 px-3 py-1 rounded-full border border-primary/20 dark:border-primary-dark/20">
+          <span className="ml-auto font-label text-xs font-bold text-primary bg-primary/10  px-3 py-1 rounded-full border border-primary/20">
             Completed in {timeLabel}
           </span>
         )}
@@ -38,3 +38,5 @@ export default function ResultsPanel({ result, isDark, analysisTimeMs }) {
     </div>
   );
 }
+
+

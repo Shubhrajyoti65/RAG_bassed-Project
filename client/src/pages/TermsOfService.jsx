@@ -72,33 +72,33 @@ const termsSections = [
 export default function TermsOfService() {
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 sm:p-8 md:p-10">
+      <div className="app-card rounded-3xl p-6 sm:p-8 md:p-10">
         <div className="mb-8">
-          <p className="font-label text-xs font-bold tracking-[0.24em] uppercase text-primary dark:text-primary-dark mb-3">
+          <p className="font-label text-xs font-bold tracking-[0.24em] uppercase text-primary mb-3">
             Legal
           </p>
-          <h1 className="font-headline text-3xl sm:text-4xl font-bold text-light-text dark:text-dark-text">
+          <h1 className="font-headline text-3xl sm:text-4xl font-bold text-text-primary">
             Terms of Service
           </h1>
-          <p className="font-body text-sm text-light-text-muted dark:text-dark-text-muted mt-3">
+          <p className="font-body text-sm text-text-secondary mt-3">
             Effective date: March 27, 2026
           </p>
-          <p className="font-body text-light-text-secondary dark:text-dark-text-secondary mt-4 leading-relaxed">
+          <p className="font-body text-text-secondary mt-4 leading-relaxed">
             These terms govern access to and use of Nyaay Sahayak. By using this platform, you agree to these terms.
           </p>
         </div>
 
         <div className="space-y-8">
           {termsSections.map((section) => (
-            <section key={section.title}>
-              <h2 className="font-headline text-xl font-bold text-light-text dark:text-dark-text mb-3">
+            <section key={section.title} className="rounded-2xl border border-border/80 bg-surface/60 p-5 sm:p-6">
+              <h2 className="font-headline text-xl font-bold text-text-primary mb-3">
                 {section.title}
               </h2>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2.5 list-disc pl-5">
                 {section.points.map((point) => (
                   <li
                     key={point}
-                    className="font-body text-light-text-secondary dark:text-dark-text-secondary leading-relaxed"
+                    className="font-body text-text-secondary leading-relaxed"
                   >
                     {point}
                   </li>
@@ -108,16 +108,16 @@ export default function TermsOfService() {
           ))}
         </div>
 
-        <div className="mt-10 pt-6 border-t border-light-border dark:border-dark-border flex flex-wrap items-center gap-4">
+        <div className="mt-10 pt-6 border-t border-border flex flex-wrap items-center gap-4">
           <Link
             to="/"
-            className="font-label text-sm font-semibold text-primary dark:text-primary-dark hover:underline"
+            className="font-label text-sm font-semibold text-primary hover:underline"
           >
             Back to Home
           </Link>
           <Link
             to="/privacy-policy"
-            className="font-label text-sm font-semibold text-primary dark:text-primary-dark hover:underline"
+            className="font-label text-sm font-semibold text-primary hover:underline"
           >
             View Privacy Policy
           </Link>
@@ -126,3 +126,4 @@ export default function TermsOfService() {
     </div>
   );
 }
+

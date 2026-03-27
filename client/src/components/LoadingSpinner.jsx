@@ -20,19 +20,21 @@ export default function LoadingSpinner() {
   }, []);
 
   return (
-    <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-sm border border-light-border dark:border-dark-border p-8 flex flex-col items-center gap-4">
+    <div className="bg-surface rounded-2xl shadow-sm border border-border p-8 flex flex-col items-center gap-4">
       <div className="relative">
-        <div className="w-16 h-16 rounded-full border-4 border-primary/20 dark:border-primary-dark/20" />
-        <div className="absolute top-0 left-0 w-16 h-16 rounded-full border-4 border-primary dark:border-primary-dark border-t-transparent animate-spin" />
+        <div className="w-16 h-16 rounded-full border-4 border-primary/20" />
+        <div className="absolute top-0 left-0 w-16 h-16 rounded-full border-4 border-primary  border-t-transparent animate-spin" />
       </div>
       <div className="text-center">
-        <p className="font-headline text-light-text dark:text-dark-text font-semibold">Analyzing your case...</p>
-        <p className="font-body text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">Searching similar High Court judgments and generating analysis</p>
-        <p className="font-label text-xs font-semibold text-primary dark:text-primary-dark mt-3">Estimated time left: {formatSeconds(remainingSeconds)}</p>
-        <p className="font-body text-xs text-light-text-muted dark:text-dark-text-muted mt-1">
+        <p className="font-headline text-text-primary font-semibold">Analyzing your case...</p>
+        <p className="font-body text-sm text-text-secondary mt-1">Searching similar High Court judgments and generating analysis</p>
+        <p className="font-label text-xs font-semibold text-primary mt-3">Estimated time left: {formatSeconds(remainingSeconds)}</p>
+        <p className="font-body text-xs text-text-secondary mt-1">
           {remainingSeconds === 0 ? "Still working. Complex queries may take a little longer." : "Please wait while we complete retrieval and drafting."}
         </p>
       </div>
     </div>
   );
 }
+
+

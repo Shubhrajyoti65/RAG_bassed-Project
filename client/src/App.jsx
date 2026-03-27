@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
-import Header from "./components/Header";
-import Disclaimer from "./components/Disclaimer";
 import AuthPanel from "./components/AuthPanel";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -84,10 +82,16 @@ function App() {
     const cachedTheme = localStorage.getItem(THEME_STORAGE_KEY);
     if (cachedTheme === "dark") {
       setIsDark(true);
+      return;
+    }
+
+    if (!cachedTheme && window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
+      setIsDark(true);
     }
   }, []);
 
   useEffect(() => {
+    document.documentElement.classList.toggle("dark", isDark);
     localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
   }, [isDark]);
 
@@ -189,7 +193,6 @@ function App() {
                 token={token} 
                 history={history} 
                 loadUserHistory={loadUserHistory} 
-                isDark={isDark} 
                 result={result} 
                 loading={loading} 
                 error={error} 
@@ -201,7 +204,7 @@ function App() {
           } />
           <Route path="/dashboard" element={
             user ? (
-              <Dashboard history={history} onSelect={handleHistorySelect} isDark={isDark} />
+              <Dashboard history={history} onSelect={handleHistorySelect} />
             ) : <Navigate to="/login" state={{ from: "/dashboard" }} replace />
           } />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
@@ -213,3 +216,5 @@ function App() {
 }
 
 export default App;
+
+

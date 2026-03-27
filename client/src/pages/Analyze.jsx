@@ -1,70 +1,68 @@
-import InputPanel from "../components/InputPanel";
-import LoadingSpinner from "../components/LoadingSpinner";
+import AnalyzeInput from "../components/AnalyzeInput";
+import AnalyzeResult from "../components/AnalyzeResult";
 import ErrorAlert from "../components/ErrorAlert";
-import ResultsPanel from "../components/ResultsPanel";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 
-export default function Analyze({ token, loadUserHistory, isDark, result, loading, error, analysisTimeMs, analyze, reset }) {
-  const [toast, setToast] = useState(null);
+export default function Analyze({ token, loadUserHistory, result, loading, error, analysisTimeMs, analyze, reset }) {
+  const analysisResult = useMemo(() => result || null, [result]);
 
   async function handleAnalyze(payload) {
     const outcome = await analyze({ ...payload, token });
-    await loadUserHistory();
     if (outcome?.ok) {
-      setToast({ message: "Analysis generated successfully!", type: "success" });
-    } else {
-      setToast({ message: "Analysis failed. See error for details.", type: "error" });
+      await loadUserHistory();
     }
   }
 
+  function handleRestart() {
+    reset();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 5000);
-      return () => clearTimeout(timer);
+    if (analysisResult) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [toast]);
+  }, [analysisResult]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in">
-      <div className="space-y-6 lg:sticky lg:top-8 lg:self-start">
-        <InputPanel onAnalyze={handleAnalyze} loading={loading} />
-      </div>
+    <div className="animate-fade-in space-y-8">
+      <section className="text-center max-w-4xl mx-auto">
+        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 font-label text-[11px] font-bold tracking-[0.15em] uppercase text-primary">
+          Intelligent Legal Counsel
+        </span>
+        <h1 className="mt-4 font-headline text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight text-text-primary">
+          Clarity for your <span className="hero-title-gradient">complex world.</span>
+        </h1>
+        <p className="mt-5 font-body text-lg text-text-secondary max-w-3xl mx-auto leading-relaxed">
+          No jargon. No confusion. Just structured, calm, and actionable legal guidance.
+        </p>
+      </section>
 
-      <div className="space-y-6">
-        {loading && <LoadingSpinner />}
-        {error && <ErrorAlert message={error} onDismiss={reset} />}
-        {result && <ResultsPanel result={result} isDark={isDark} analysisTimeMs={analysisTimeMs} />}
-
-        {!loading && !error && !result && (
-          <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-sm border border-light-border dark:border-dark-border p-8 text-center">
-            <div className="gradient-primary-bg w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-              </svg>
+      {!analysisResult ? (
+        <div className="space-y-5">
+          <AnalyzeInput onAnalyze={handleAnalyze} loading={loading} />
+          {loading && (
+            <div className="app-card p-8 flex flex-col items-center gap-4">
+              <div className="w-14 h-14 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+              <p className="font-headline text-text-primary font-medium">Analyzing your situation...</p>
+              <p className="font-body text-sm text-text-secondary text-center max-w-md">
+                Processing facts, matching legal provisions, and preparing a structured breakdown.
+              </p>
             </div>
-            <h3 className="font-headline text-lg font-bold text-light-text dark:text-dark-text mb-2">Ready to Analyze</h3>
-            <p className="font-body text-sm text-light-text-secondary dark:text-dark-text-secondary max-w-sm mx-auto">
-              Enter a domestic violence case description or upload a PDF document to get AI-powered analysis with similar High Court judgments.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {toast && (
-        <div className={`fixed bottom-8 right-8 px-5 py-4 rounded-2xl shadow-2xl flex items-center gap-3 z-50 border animate-fade-in ${
-          toast.type === 'success' ? 'bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800'
-        }`}>
-          {toast.type === 'success' ? (
-            <div className="gradient-primary-bg p-1.5 rounded-full"><svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg></div>
-          ) : (
-            <div className="bg-red-500 p-1.5 rounded-full"><svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></div>
           )}
-          <span className="font-label text-sm font-bold text-light-text dark:text-dark-text">{toast.message}</span>
-          <button onClick={() => setToast(null)} className="ml-3 p-1 rounded-full text-light-text-muted hover:text-light-text transition-colors">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-          </button>
+          {error && <ErrorAlert message={error} onDismiss={reset} />}
+        </div>
+      ) : (
+        <div>
+          <AnalyzeResult
+            result={analysisResult}
+            analysisTimeMs={analysisTimeMs}
+            onRestart={handleRestart}
+          />
         </div>
       )}
     </div>
   );
 }
+
+
