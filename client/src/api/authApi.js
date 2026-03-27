@@ -57,3 +57,21 @@ export async function getCurrentUser(token) {
 
   return payload.user;
 }
+
+export async function updateCurrentUser(token, { name, avatarUrl, gender }) {
+  const response = await fetch("/api/auth/me", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ name, avatarUrl, gender, sex: gender }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || "Could not update profile.");
+  }
+
+  return payload.user;
+}

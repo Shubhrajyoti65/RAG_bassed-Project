@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
-import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+﻿import { useEffect, useState } from "react";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import AuthPanel from "./components/AuthPanel";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import Analyze from "./pages/Analyze";
 import Dashboard from "./pages/Dashboard";
+import HistoryPage from "./pages/HistoryPage";
+import ProfilePage from "./pages/ProfilePage";
+import ContactUsPage from "./pages/ContactUsPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import { useAnalysis } from "./hooks/useAnalysis";
@@ -19,11 +22,11 @@ function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(false);
   const [history, setHistory] = useState([]);
+  const [quoteSeed, setQuoteSeed] = useState(Date.now());
   const [isDark, setIsDark] = useState(false);
 
   const { result, loading, error, analysisTimeMs, analyze, reset, loadSavedResult } = useAnalysis();
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     const cached = localStorage.getItem(AUTH_STORAGE_KEY);
@@ -42,6 +45,7 @@ function App() {
 
         setAuthLoading(true);
         setToken(parsed.token);
+        setQuoteSeed(Number(parsed.quoteSeed) || Date.now());
 
         const currentUser = await getCurrentUser(parsed.token);
         if (!isActive) {
@@ -96,12 +100,30 @@ function App() {
   }, [isDark]);
 
   function persistSession(sessionToken, sessionUser) {
+    const nextQuoteSeed = Date.now();
     setToken(sessionToken);
     setUser(sessionUser);
+    setQuoteSeed(nextQuoteSeed);
     localStorage.setItem(
       AUTH_STORAGE_KEY,
-      JSON.stringify({ token: sessionToken, user: sessionUser })
+      JSON.stringify({ token: sessionToken, user: sessionUser, quoteSeed: nextQuoteSeed })
     );
+  }
+
+  function updateStoredSession(nextUser, sessionToken = token) {
+    if (!sessionToken) {
+      return;
+    }
+
+    localStorage.setItem(
+      AUTH_STORAGE_KEY,
+      JSON.stringify({ token: sessionToken, user: nextUser, quoteSeed })
+    );
+  }
+
+  function handleUserUpdated(nextUser) {
+    setUser(nextUser);
+    updateStoredSession(nextUser);
   }
 
   function clearSession() {
@@ -128,8 +150,7 @@ function App() {
       const payload = await loginUser({ email, password });
       persistSession(payload.token, payload.user);
       await loadUserHistory(payload.token);
-      const from = location.state?.from || "/analyze";
-      navigate(from, { replace: true });
+      navigate("/dashboard", { replace: true });
     } finally {
       setAuthLoading(false);
     }
@@ -141,8 +162,7 @@ function App() {
       const payload = await signupUser({ name, email, password });
       persistSession(payload.token, payload.user);
       await loadUserHistory(payload.token);
-      const from = location.state?.from || "/analyze";
-      navigate(from, { replace: true });
+      navigate("/dashboard", { replace: true });
     } finally {
       setAuthLoading(false);
     }
@@ -154,8 +174,7 @@ function App() {
       const payload = await googleAuthUser({ idToken });
       persistSession(payload.token, payload.user);
       await loadUserHistory(payload.token);
-      const from = location.state?.from || "/analyze";
-      navigate(from, { replace: true });
+      navigate("/dashboard", { replace: true });
     } finally {
       setAuthLoading(false);
     }
@@ -176,7 +195,7 @@ function App() {
           <Route path="/" element={<Home isDark={isDark} />} />
           <Route path="/home" element={<Navigate to="/" replace />} />
           <Route path="/login" element={
-            user ? <Navigate to="/analyze" replace /> : (
+            user ? <Navigate to="/dashboard" replace /> : (
               <AuthPanel
                 onLogin={handleLogin}
                 onSignup={handleSignup}
@@ -204,9 +223,20 @@ function App() {
           } />
           <Route path="/dashboard" element={
             user ? (
-              <Dashboard history={history} onSelect={handleHistorySelect} />
+              <Dashboard user={user} quoteSeed={quoteSeed} history={history} onSelect={handleHistorySelect} />
             ) : <Navigate to="/login" state={{ from: "/dashboard" }} replace />
           } />
+          <Route path="/history" element={
+            user ? (
+              <HistoryPage history={history} onSelect={handleHistorySelect} />
+            ) : <Navigate to="/login" state={{ from: "/history" }} replace />
+          } />
+          <Route path="/profile" element={
+            user ? (
+              <ProfilePage user={user} token={token} onUserUpdated={handleUserUpdated} />
+            ) : <Navigate to="/login" state={{ from: "/profile" }} replace />
+          } />
+          <Route path="/contact-us" element={<ContactUsPage user={user} />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="*" element={<Navigate to="/" replace />} />

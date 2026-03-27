@@ -5,6 +5,7 @@ const {
   login,
   authenticateWithGoogle,
   issueToken,
+  updateProfile,
 } = require("../services/authService");
 
 const router = express.Router();
@@ -41,6 +42,15 @@ router.post("/auth/google", async (req, res, next) => {
 
 router.get("/auth/me", authenticate, (req, res) => {
   res.json({ user: req.user });
+});
+
+router.patch("/auth/me", authenticate, async (req, res, next) => {
+  try {
+    const user = await updateProfile(req.user.id, req.body || {});
+    res.json({ user });
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = router;

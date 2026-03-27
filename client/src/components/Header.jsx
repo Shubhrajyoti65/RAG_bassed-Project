@@ -255,6 +255,14 @@ export default function Header({ user, onLogout, isDark, onToggleTheme }) {
                         <p className="font-label text-xs text-text-secondary mt-0.5 truncate">{user.email}</p>
                       </div>
                       <div className="border-t border-border my-2" />
+                      <Link to="/profile" onClick={() => setProfileMenuOpen(false)}
+                        className="block w-full text-left font-label text-sm px-3 py-2 rounded-xl hover:bg-surface/80 text-text-secondary transition-colors">
+                        Profile
+                      </Link>
+                      <Link to="/history" onClick={() => setProfileMenuOpen(false)}
+                        className="block w-full text-left font-label text-sm px-3 py-2 rounded-xl hover:bg-surface/80 text-text-secondary transition-colors">
+                        Full History
+                      </Link>
                       <Link to="/analyze" onClick={() => setProfileMenuOpen(false)}
                         className="block w-full text-left font-label text-sm px-3 py-2 rounded-xl hover:bg-surface/80 text-text-secondary transition-colors">
                         Analyze
@@ -262,6 +270,10 @@ export default function Header({ user, onLogout, isDark, onToggleTheme }) {
                       <Link to="/dashboard" onClick={() => setProfileMenuOpen(false)}
                         className="block w-full text-left font-label text-sm px-3 py-2 rounded-xl hover:bg-surface/80 text-text-secondary transition-colors">
                         Dashboard
+                      </Link>
+                      <Link to="/contact-us" onClick={() => setProfileMenuOpen(false)}
+                        className="block w-full text-left font-label text-sm px-3 py-2 rounded-xl hover:bg-surface/80 text-text-secondary transition-colors">
+                        Contact Us
                       </Link>
                       <div className="border-t border-border my-2" />
                       <button

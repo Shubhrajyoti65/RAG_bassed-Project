@@ -1,8 +1,10 @@
+import { useState } from "react";
 import Header from "./Header";
-import Disclaimer from "./Disclaimer";
 import { Link } from "react-router-dom";
 
 export default function Layout({ children, user, onLogout, isDark, onToggleTheme }) {
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
+
   return (
     <div className="min-h-screen bg-background transition-colors duration-300 flex flex-col">
       <Header user={user} onLogout={onLogout} isDark={isDark} onToggleTheme={onToggleTheme} />
@@ -10,10 +12,6 @@ export default function Layout({ children, user, onLogout, isDark, onToggleTheme
       <main className="grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
-
-      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pb-6">
-        <Disclaimer isDark={isDark} />
-      </div>
 
       <footer className="mt-auto border-t border-border/80 bg-surface/80 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -34,10 +32,30 @@ export default function Layout({ children, user, onLogout, isDark, onToggleTheme
               <Link to="/terms-of-service" className="font-label text-xs text-text-secondary hover:text-primary transition-colors">
                 Terms of Service
               </Link>
+              <button
+                type="button"
+                onClick={() => setShowDisclaimer((prev) => !prev)}
+                className="font-label text-xs text-amber-500 hover:text-amber-400 transition-colors"
+                aria-expanded={showDisclaimer}
+                aria-controls="footer-disclaimer-message"
+              >
+                Disclaimer
+              </button>
             </div>
 
             <p className="font-label text-xs text-text-secondary">(c) 2024 Nyaay Sahayak - Janata kee seva mein samarpit</p>
           </div>
+
+          {showDisclaimer && (
+            <div
+              id="footer-disclaimer-message"
+              className="mt-4 rounded-lg border border-amber-300/60 bg-amber-50/70 px-4 py-3 dark:bg-amber-500/8 dark:border-amber-400/30"
+            >
+              <p className="font-body text-sm text-amber-900 dark:text-amber-200">
+                <strong className="font-headline">Disclaimer:</strong> Nyaay Sahayak is a research tool for informational and educational purposes only. It does <strong>not</strong> provide legal advice. Please consult a qualified advocate for legal guidance.
+              </p>
+            </div>
+          )}
         </div>
       </footer>
     </div>

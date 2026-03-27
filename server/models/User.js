@@ -30,6 +30,16 @@ const userSchema = new mongoose.Schema(
       unique: true,
       sparse: true,
     },
+    avatarUrl: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    sex: {
+      type: String,
+      enum: ["", "male", "female", "other", "prefer_not_to_say"],
+      default: "",
+    },
   },
   {
     timestamps: true,
