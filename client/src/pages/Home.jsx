@@ -133,8 +133,70 @@ function useRevealStagger() {
   return ref;
 }
 
+function useHeroParallax() {
+  const wrapRef = useRef(null);
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    const card = cardRef.current;
+    if (!wrap || !card) {
+      return undefined;
+    }
+
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    if (reduceMotion) {
+      return undefined;
+    }
+
+    let rafId = 0;
+
+    function applyTilt(clientX, clientY) {
+      const rect = wrap.getBoundingClientRect();
+      const x = (clientX - rect.left) / rect.width - 0.5;
+      const y = (clientY - rect.top) / rect.height - 0.5;
+
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+
+      rafId = requestAnimationFrame(() => {
+        card.style.transform = `perspective(1100px) rotateX(${(-y * 8).toFixed(2)}deg) rotateY(${(x * 9).toFixed(2)}deg) translate3d(${(x * 8).toFixed(2)}px, ${(-y * 8).toFixed(2)}px, 0)`;
+      });
+    }
+
+    function handleMove(event) {
+      applyTilt(event.clientX, event.clientY);
+    }
+
+    function resetTilt() {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+
+      rafId = requestAnimationFrame(() => {
+        card.style.transform = "perspective(1100px) rotateX(0deg) rotateY(0deg) translate3d(0, 0, 0)";
+      });
+    }
+
+    wrap.addEventListener("mousemove", handleMove);
+    wrap.addEventListener("mouseleave", resetTilt);
+
+    return () => {
+      wrap.removeEventListener("mousemove", handleMove);
+      wrap.removeEventListener("mouseleave", resetTilt);
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  }, []);
+
+  return { wrapRef, cardRef };
+}
+
 export default function Home() {
   const heroRef = useReveal();
+  const { wrapRef: heroVisualRef, cardRef: heroCardRef } = useHeroParallax();
   const featuresRef = useRevealStagger();
   const processRef = useRevealStagger();
   const trustRef = useRevealStagger();
@@ -143,25 +205,25 @@ export default function Home() {
 
   return (
     <div className="space-y-14 sm:space-y-16">
-      <section ref={heroRef} className="relative overflow-hidden rounded-4xl app-card p-7 sm:p-10 lg:p-12">
+      <section ref={heroRef} className="home-hero-shell relative overflow-hidden rounded-4xl app-card p-7 sm:p-10 lg:p-12">
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(34,211,238,0.15),transparent_60%)]" />
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_bottom_left,rgba(29,78,216,0.12),transparent_58%)]" />
 
         <div className="relative z-10 grid gap-9 lg:grid-cols-[1.2fr_1fr] items-center">
           <div>
-            <span className="inline-flex items-center rounded-full border border-border bg-surface/80 px-4 py-1.5 text-[11px] font-label font-bold tracking-[0.2em] uppercase text-primary">
+            <span className="hero-copy-intro inline-flex items-center rounded-full border border-border bg-surface/80 px-4 py-1.5 text-[11px] font-label font-bold tracking-[0.2em] uppercase text-primary">
               Janata kee seva mein samarpit
             </span>
 
-            <h1 className="mt-5 font-headline text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.06] tracking-tight text-text-primary">
+            <h1 className="hero-copy-title mt-5 font-headline text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.06] tracking-tight text-text-primary">
               Clarity for your <span className="hero-title-gradient">complex world.</span>
             </h1>
 
-            <p className="mt-5 max-w-2xl font-body text-base sm:text-lg text-text-secondary leading-relaxed">
+            <p className="hero-copy-text mt-5 max-w-2xl font-body text-base sm:text-lg text-text-secondary leading-relaxed">
               Nyaay Sahayak turns complex domestic violence case details into structured and understandable legal guidance so you can prepare confidently.
             </p>
 
-            <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:items-center">
+            <div className="hero-copy-actions mt-8 flex flex-col sm:flex-row gap-3 sm:items-center">
               <Link
                 to="/login?tab=signup"
                 className="app-button-primary px-7 py-3.5 font-label text-sm sm:text-base font-bold text-center"
@@ -177,7 +239,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="gradient-primary-bg rounded-3xl p-6 sm:p-7 text-white shadow-xl">
+          <div ref={heroVisualRef} className="hero-visual-wrap relative">
+            <div ref={heroCardRef} className="hero-preview-card gradient-primary-bg rounded-3xl p-6 sm:p-7 text-white shadow-xl">
             <p className="font-label text-[11px] uppercase tracking-[0.2em] text-white/70">Highlight</p>
             <h2 className="mt-2 font-headline text-2xl font-bold">Legal dashboard preview</h2>
             <p className="mt-3 font-body text-sm text-white/85 leading-relaxed">
@@ -185,18 +248,19 @@ export default function Home() {
             </p>
 
             <div className="mt-6 grid grid-cols-3 gap-3">
-              <div className="rounded-xl bg-white/10 p-3">
+              <div className="hero-mini-stat rounded-xl bg-white/10 p-3">
                 <p className="font-headline text-xl font-bold">94%</p>
                 <p className="font-label text-[10px] uppercase tracking-[0.14em] text-white/75">Confidence</p>
               </div>
-              <div className="rounded-xl bg-white/10 p-3">
+              <div className="hero-mini-stat rounded-xl bg-white/10 p-3">
                 <p className="font-headline text-xl font-bold">4</p>
                 <p className="font-label text-[10px] uppercase tracking-[0.14em] text-white/75">Provisions</p>
               </div>
-              <div className="rounded-xl bg-white/10 p-3">
+              <div className="hero-mini-stat rounded-xl bg-white/10 p-3">
                 <p className="font-headline text-xl font-bold">3</p>
                 <p className="font-label text-[10px] uppercase tracking-[0.14em] text-white/75">Cases</p>
               </div>
+            </div>
             </div>
           </div>
         </div>
@@ -209,9 +273,13 @@ export default function Home() {
         </div>
 
         <div ref={featuresRef} className="grid gap-4 md:grid-cols-3">
-          {FEATURES.map((feature) => (
-            <article key={feature.title} className="app-card p-6 transition-transform duration-200 hover:-translate-y-1">
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          {FEATURES.map((feature, index) => (
+            <article
+              key={feature.title}
+              className="app-card ui-border-highlight animate-popIn p-6"
+              style={{ animationDelay: `${index * 0.08}s` }}
+            >
+              <span className="ui-icon-enhance inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {feature.icon}
                 </svg>
@@ -230,8 +298,12 @@ export default function Home() {
         </div>
 
         <div ref={processRef} className="grid gap-4 md:grid-cols-3">
-          {PROCESS_STEPS.map((step) => (
-            <article key={step.number} className="app-card p-6">
+          {PROCESS_STEPS.map((step, index) => (
+            <article
+              key={step.number}
+              className="app-card ui-border-highlight animate-popIn p-6"
+              style={{ animationDelay: `${index * 0.08}s` }}
+            >
               <p className="font-label text-xs font-bold tracking-[0.2em] uppercase text-primary">Step {step.number}</p>
               <h3 className="mt-2 font-headline text-xl font-bold text-text-primary">{step.title}</h3>
               <p className="mt-2 font-body text-sm leading-relaxed text-text-secondary">{step.description}</p>
@@ -241,15 +313,19 @@ export default function Home() {
       </section>
 
       <section ref={trustRef} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {TRUST_STATS.map((stat) => (
-          <article key={stat.label} className="app-card p-5 text-center">
+        {TRUST_STATS.map((stat, index) => (
+          <article
+            key={stat.label}
+            className="app-card ui-border-highlight animate-popIn p-5 text-center"
+            style={{ animationDelay: `${index * 0.07}s` }}
+          >
             <p className="font-headline text-3xl font-bold text-text-primary">{stat.value}</p>
             <p className="mt-1 font-label text-xs font-semibold uppercase tracking-[0.17em] text-text-secondary">{stat.label}</p>
           </article>
         ))}
       </section>
 
-      <section id="about" ref={aboutRef} className="app-card p-7 sm:p-9">
+      <section id="about" ref={aboutRef} className="app-card ui-border-highlight animate-popIn p-7 sm:p-9">
         <p className="font-label text-xs font-bold tracking-[0.24em] uppercase text-primary">About us</p>
         <h2 className="mt-2 font-headline text-3xl sm:text-4xl font-bold text-text-primary">Technology in service of justice</h2>
         <div className="mt-5 space-y-4 font-body text-text-secondary leading-relaxed">
@@ -272,8 +348,12 @@ export default function Home() {
         </div>
 
         <div ref={contactRef} className="grid gap-4 md:grid-cols-3">
-          {CONTACT_POINTS.map((point) => (
-            <article key={point.title} className="app-card p-6">
+          {CONTACT_POINTS.map((point, index) => (
+            <article
+              key={point.title}
+              className="app-card ui-border-highlight animate-popIn p-6"
+              style={{ animationDelay: `${index * 0.08}s` }}
+            >
               <h3 className="font-headline text-lg font-bold text-text-primary">{point.title}</h3>
               <p className="mt-2 font-body text-sm text-text-secondary">{point.detail}</p>
             </article>

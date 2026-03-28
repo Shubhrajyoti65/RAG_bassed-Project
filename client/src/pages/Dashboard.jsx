@@ -67,7 +67,7 @@ export default function Dashboard({ user, quoteSeed, history = [], onSelect }) {
   const totalCases = history.length;
   const textCases = history.filter((h) => h.inputType === "text").length;
   const pdfCases = history.filter((h) => h.inputType === "pdf").length;
-  const recentHistory = history.slice(0, 10);
+  const recentHistory = history.slice(0, 12);
   const firstName = String(user?.name || "User").split(" ")[0];
   const quoteOfSession = pickQuote(quoteSeed);
   const selectedGender = user?.gender || user?.sex || "";
@@ -77,7 +77,6 @@ export default function Dashboard({ user, quoteSeed, history = [], onSelect }) {
     { label: "Total Cases", value: totalCases },
     { label: "Text Analyses", value: textCases },
     { label: "PDF Analyses", value: pdfCases },
-    { label: "Saved Records", value: totalCases },
   ];
 
   return (
@@ -124,7 +123,7 @@ export default function Dashboard({ user, quoteSeed, history = [], onSelect }) {
               Welcome back, {firstName}
             </h1>
 
-            <div className="mt-5 rounded-2xl border border-border/80 bg-surface/85 p-4 sm:p-5 flex-1">
+            <div className="mt-5 rounded-2xl ui-panel-box p-4 sm:p-5 flex-1">
               <blockquote className="mt-2 font-body text-text-primary text-base leading-relaxed">
                 "{quoteOfSession.quote}"
               </blockquote>
@@ -134,10 +133,14 @@ export default function Dashboard({ user, quoteSeed, history = [], onSelect }) {
         </div>
       </section>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {stats.map((stat, index) => (
-          <div key={stat.label} className="app-card p-5">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 ${index === 0 ? "gradient-primary-bg text-white" : "bg-primary/10 text-primary"}`}>
+          <div
+            key={stat.label}
+            className="app-card ui-border-highlight animate-popIn p-5"
+            style={{ animationDelay: `${index * 0.07}s` }}
+          >
+            <div className="ui-icon-enhance w-12 h-12 rounded-xl flex items-center justify-center mb-3 bg-primary/10 text-primary">
               <span className="font-headline text-xl font-bold">{stat.value}</span>
             </div>
             <p className="font-label text-xs font-semibold text-text-secondary uppercase tracking-wider">{stat.label}</p>
@@ -156,14 +159,14 @@ export default function Dashboard({ user, quoteSeed, history = [], onSelect }) {
           <p className="font-body text-text-secondary max-w-sm mx-auto mb-8">
             You haven&apos;t analyzed any cases yet. Head over to the Analyze page to analyze your first domestic violence document.
           </p>
-          <Link to="/analyze" className="app-button-primary px-8 py-3.5 font-bold font-label shadow-md">
+          <Link to="/analyze" className="app-button-primary ui-button-enhance ui-button-shine px-8 py-3.5 font-bold font-label shadow-md">
             Start First Analysis
           </Link>
         </div>
       ) : (
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-headline text-2xl font-bold text-text-primary">Previous Cases (Top 10)</h2>
+            <h2 className="font-headline text-2xl font-bold text-text-primary">Previous Cases (Top 12)</h2>
             <Link to="/history" className="font-label text-sm font-semibold text-primary hover:underline">
               View full history
             </Link>
@@ -173,7 +176,8 @@ export default function Dashboard({ user, quoteSeed, history = [], onSelect }) {
             {recentHistory.map((item, index) => (
               <article
                 key={item.id}
-                className="app-card p-6 hover:shadow-lg border border-border transition-all duration-200 flex flex-col group cursor-pointer relative overflow-hidden hover:-translate-y-0.5"
+                className="app-card ui-border-highlight animate-popIn p-6 min-h-68 flex flex-col group cursor-pointer relative overflow-hidden"
+                style={{ animationDelay: `${index * 0.06}s` }}
                 onClick={() => onSelect(item)}
                 role="button"
                 tabIndex={0}
@@ -183,8 +187,6 @@ export default function Dashboard({ user, quoteSeed, history = [], onSelect }) {
                   }
                 }}
               >
-                <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-bl-full -mr-2 -mt-2 transition-transform duration-300 group-hover:scale-125" />
-
                 <div className="flex items-center justify-between mb-4 relative z-10">
                   <span className="px-3 py-1.5 bg-surface font-label text-xs font-bold uppercase tracking-wider rounded-full text-text-secondary border border-border">
                     #{index + 1} {item.inputType}
@@ -200,7 +202,7 @@ export default function Dashboard({ user, quoteSeed, history = [], onSelect }) {
 
                 <div className="mt-auto pt-4 border-t border-border flex items-center justify-between relative z-10">
                   <span className="font-label text-xs font-bold text-primary">Open result</span>
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white text-primary transition-all duration-200">
+                  <div className="ui-icon-enhance w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white text-primary transition-all duration-200">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                     </svg>

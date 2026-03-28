@@ -154,7 +154,7 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
 
   return (
     <div className="max-w-6xl w-full mx-auto animate-fade-in">
-      <div className="app-card overflow-hidden p-0">
+      <div className="app-card ui-border-highlight overflow-hidden p-0">
         <div className="grid md:grid-cols-2">
           <section className="gradient-primary-bg px-8 py-10 sm:px-10 sm:py-11 text-white">
             <span className="inline-flex items-center rounded-full bg-white/12 px-3.5 py-1 font-label text-[11px] font-bold tracking-[0.16em] uppercase text-white/85">
@@ -193,7 +193,7 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
               </p>
             </div>
 
-            <div className="relative mb-6 grid grid-cols-2 rounded-xl border border-border p-1 bg-surface">
+            <div className="relative mb-6 grid grid-cols-2 rounded-xl border border-border p-1 bg-surface ui-border-highlight transition-all duration-300">
               <div
                 className="absolute top-1 bottom-1 rounded-lg bg-primary transition-all duration-200"
                 style={{
@@ -243,7 +243,7 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
                     onChange={(event) => updateField("name", event.target.value)}
                     placeholder="Enter your full name"
                     disabled={loading}
-                    className="w-full app-input px-4 py-3 text-sm"
+                    className="w-full app-input ui-border-highlight px-4 py-3 text-sm"
                   />
                 </div>
               )}
@@ -258,7 +258,7 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
                   onChange={(event) => updateField("email", event.target.value)}
                   placeholder="name@example.com"
                   disabled={loading}
-                  className="w-full app-input px-4 py-3 text-sm"
+                  className="w-full app-input ui-border-highlight px-4 py-3 text-sm"
                 />
               </div>
 
@@ -272,7 +272,7 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
                   onChange={(event) => updateField("password", event.target.value)}
                   placeholder="Enter password"
                   disabled={loading}
-                  className="w-full app-input px-4 py-3 text-sm"
+                  className="w-full app-input ui-border-highlight px-4 py-3 text-sm"
                 />
               </div>
 
@@ -285,7 +285,7 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full app-button-primary py-3.5 font-label font-bold text-sm disabled:opacity-55 disabled:cursor-not-allowed"
+                className="w-full app-button-primary ui-button-enhance ui-button-shine py-3.5 font-label font-bold text-sm disabled:opacity-55 disabled:cursor-not-allowed"
               >
                 {loading ? "Authenticating..." : mode === "signup" ? "Create account" : "Sign in"}
               </button>
@@ -311,7 +311,7 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
                   onClick={() => {
                     setError("Google sign-in is not configured. Add VITE_GOOGLE_CLIENT_ID in client/.env and restart the client.");
                   }}
-                  className="w-full app-button-secondary py-3 text-sm font-label font-semibold"
+                  className="w-full app-button-secondary ui-button-enhance py-3 text-sm font-label font-semibold"
                 >
                   Continue with Google
                 </button>

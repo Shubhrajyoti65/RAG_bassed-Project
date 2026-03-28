@@ -13,8 +13,8 @@ export default function ContactUsPage({ user }) {
 
           {user && (
             <div className="flex items-center gap-3">
-              <Link to="/profile" className="app-button-secondary px-4 py-2.5 font-label text-sm font-semibold">Profile</Link>
-              <Link to="/contact-us" className="app-button-primary px-4 py-2.5 font-label text-sm font-semibold">Contact Us</Link>
+              <Link to="/profile" className="app-button-secondary ui-button-enhance px-4 py-2.5 font-label text-sm font-semibold">Profile</Link>
+              <Link to="/contact-us" className="app-button-primary ui-button-enhance ui-button-shine px-4 py-2.5 font-label text-sm font-semibold">Contact Us</Link>
             </div>
           )}
         </div>

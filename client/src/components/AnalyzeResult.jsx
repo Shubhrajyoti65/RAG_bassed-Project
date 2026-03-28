@@ -43,7 +43,7 @@ export default function AnalyzeResult({ result, analysisTimeMs, onRestart }) {
   const duration = formatDuration(analysisTimeMs);
 
   return (
-    <div className="app-card p-6 sm:p-8 animate-fade-in-up">
+    <div className="app-card ui-border-highlight animate-popIn p-6 sm:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="font-label text-xs uppercase tracking-[0.22em] font-bold text-primary">Situation Breakdown</p>
@@ -77,7 +77,7 @@ export default function AnalyzeResult({ result, analysisTimeMs, onRestart }) {
           </p>
         </article>
 
-        <article className="rounded-2xl p-6 border border-border bg-surface">
+        <article className="rounded-2xl p-6 transition-all duration-300 ui-panel-box ui-border-highlight">
           <p className="font-label text-sm font-semibold text-primary">Critical Window</p>
           <h3 className="font-headline text-xl font-semibold text-text-primary mt-2">What Needs Timely Action</h3>
           <p className="font-body text-sm text-text-secondary mt-3 leading-relaxed">
@@ -88,12 +88,16 @@ export default function AnalyzeResult({ result, analysisTimeMs, onRestart }) {
         </article>
       </div>
 
-      <section className="mt-7 rounded-2xl border border-border bg-surface p-6">
+      <section className="mt-7 rounded-2xl p-6 transition-all duration-300 ui-panel-box ui-border-highlight">
         <h3 className="font-headline text-lg font-semibold text-text-primary mb-4">Recommended Next Steps</h3>
         <div className="space-y-3.5">
           {steps.map((step, index) => (
-            <div key={`${step}-${index}`} className="flex items-start gap-3">
-              <span className="w-7 h-7 shrink-0 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center mt-0.5">
+            <div
+              key={`${step}-${index}`}
+              className="flex items-start gap-3 animate-popIn"
+              style={{ animationDelay: `${index * 0.07}s` }}
+            >
+              <span className="ui-icon-enhance w-7 h-7 shrink-0 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center mt-0.5">
                 {index + 1}
               </span>
               <p className="font-body text-text-secondary leading-relaxed">{step}</p>

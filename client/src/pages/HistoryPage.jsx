@@ -40,7 +40,7 @@ export default function HistoryPage({ history = [], onSelect }) {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              className="w-full app-input px-4 py-3 text-sm"
+              className="w-full app-input ui-border-highlight px-4 py-3 text-sm"
               placeholder="Search by keyword or type..."
             />
           </div>
@@ -60,7 +60,7 @@ export default function HistoryPage({ history = [], onSelect }) {
         <div className="app-card p-10 text-center">
           <h2 className="font-headline text-xl font-bold text-text-primary">No matching records found</h2>
           <p className="font-body text-text-secondary mt-2">Try another search keyword, or run a fresh analysis.</p>
-          <Link to="/analyze" className="mt-5 inline-flex app-button-primary px-6 py-3 font-label font-semibold">
+          <Link to="/analyze" className="mt-5 inline-flex app-button-primary ui-button-enhance ui-button-shine px-6 py-3 font-label font-semibold">
             Analyze new case
           </Link>
         </div>
@@ -69,7 +69,8 @@ export default function HistoryPage({ history = [], onSelect }) {
           {filteredHistory.map((item, index) => (
             <article
               key={item.id}
-              className="app-card p-6 hover:shadow-lg border border-border transition-all duration-200 flex flex-col group cursor-pointer relative overflow-hidden hover:-translate-y-0.5"
+              className="app-card ui-border-highlight animate-popIn p-6 flex flex-col group cursor-pointer relative overflow-hidden"
+              style={{ animationDelay: `${index * 0.06}s` }}
               onClick={() => onSelect(item)}
               role="button"
               tabIndex={0}
@@ -96,7 +97,7 @@ export default function HistoryPage({ history = [], onSelect }) {
 
               <div className="mt-auto pt-4 border-t border-border flex items-center justify-between relative z-10">
                 <span className="font-label text-xs font-bold text-primary">Open result</span>
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white text-primary transition-all duration-200">
+                <div className="ui-icon-enhance w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white text-primary transition-all duration-200">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                   </svg>

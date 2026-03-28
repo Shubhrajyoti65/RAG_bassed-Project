@@ -59,7 +59,7 @@ const policySections = [
 export default function PrivacyPolicy() {
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="app-card rounded-3xl p-6 sm:p-8 md:p-10">
+      <div className="p-6 sm:p-8 md:p-10">
         <div className="mb-8">
           <p className="font-label text-xs font-bold tracking-[0.24em] uppercase text-primary mb-3">
             Legal
@@ -76,21 +76,29 @@ export default function PrivacyPolicy() {
         </div>
 
         <div className="space-y-8">
-          {policySections.map((section) => (
-            <section key={section.title} className="rounded-2xl border border-border/80 bg-surface/60 p-5 sm:p-6">
+          {policySections.map((section, index) => (
+            <section
+              key={section.title}
+              className="animate-popIn pb-6 border-b border-border/60 last:pb-0 last:border-b-0"
+              style={{ animationDelay: `${index * 0.05}s` }}
+            >
               <h2 className="font-headline text-xl font-bold text-text-primary mb-3">
                 {section.title}
               </h2>
-              <ul className="space-y-2.5 list-disc pl-5">
-                {section.points.map((point) => (
-                  <li
-                    key={point}
-                    className="font-body text-text-secondary leading-relaxed"
+              <div className="mt-4 grid gap-3">
+                {section.points.map((point, pointIndex) => (
+                  <article
+                    key={`${section.title}-${pointIndex}`}
+                    className="ui-panel-box ui-border-highlight rounded-xl px-4 py-3 animate-popIn"
+                    style={{ animationDelay: `${index * 0.05 + pointIndex * 0.03}s` }}
                   >
-                    {point}
-                  </li>
+                    <p className="font-body text-text-secondary leading-relaxed flex items-start gap-2.5">
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/70" />
+                      <span>{point}</span>
+                    </p>
+                  </article>
                 ))}
-              </ul>
+              </div>
             </section>
           ))}
         </div>

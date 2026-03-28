@@ -42,7 +42,7 @@ export default function Analyze({ token, loadUserHistory, result, loading, error
         <div className="space-y-5">
           <AnalyzeInput onAnalyze={handleAnalyze} loading={loading} />
           {loading && (
-            <div className="app-card p-8 flex flex-col items-center gap-4">
+            <div className="app-card ui-border-highlight animate-popIn p-8 flex flex-col items-center gap-4">
               <div className="w-14 h-14 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
               <p className="font-headline text-text-primary font-medium">Analyzing your situation...</p>
               <p className="font-body text-sm text-text-secondary text-center max-w-md">

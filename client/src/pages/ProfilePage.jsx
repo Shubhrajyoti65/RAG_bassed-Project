@@ -91,8 +91,8 @@ export default function ProfilePage({ user, token, onUserUpdated }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link to="/profile" className="app-button-primary px-4 py-2.5 font-label text-sm font-semibold">Profile</Link>
-            <Link to="/contact-us" className="app-button-secondary px-4 py-2.5 font-label text-sm font-semibold">Contact Us</Link>
+            <Link to="/profile" className="app-button-primary ui-button-enhance ui-button-shine px-4 py-2.5 font-label text-sm font-semibold">Profile</Link>
+            <Link to="/contact-us" className="app-button-secondary ui-button-enhance px-4 py-2.5 font-label text-sm font-semibold">Contact Us</Link>
           </div>
         </div>
       </section>
@@ -127,7 +127,7 @@ export default function ProfilePage({ user, token, onUserUpdated }) {
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              className="w-full app-input px-4 py-3 text-sm"
+              className="w-full app-input ui-border-highlight px-4 py-3 text-sm"
               placeholder="Enter full name"
             />
           </div>
@@ -139,7 +139,7 @@ export default function ProfilePage({ user, token, onUserUpdated }) {
             <select
               value={gender}
               onChange={(event) => setGender(event.target.value)}
-              className="w-full app-input px-4 py-3 text-sm"
+              className="w-full app-input ui-border-highlight px-4 py-3 text-sm"
             >
               <option value="">Select gender</option>
               <option value="male">Male</option>
@@ -156,7 +156,7 @@ export default function ProfilePage({ user, token, onUserUpdated }) {
             <input
               value={user?.email || ""}
               disabled
-              className="w-full app-input px-4 py-3 text-sm opacity-80 cursor-not-allowed"
+              className="w-full app-input ui-border-highlight px-4 py-3 text-sm opacity-80 cursor-not-allowed"
             />
           </div>
 
@@ -169,14 +169,14 @@ export default function ProfilePage({ user, token, onUserUpdated }) {
                 type="file"
                 accept="image/*"
                 onChange={handleAvatarUpload}
-                className="w-full app-input px-4 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:font-label file:text-xs file:font-semibold file:text-primary"
+                className="w-full app-input ui-border-highlight px-4 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:font-label file:text-xs file:font-semibold file:text-primary"
               />
             </div>
 
             <button
               type="button"
               onClick={() => setAvatarUrl("")}
-              className="app-button-secondary px-4 py-2.5 font-label text-sm font-semibold h-fit sm:mb-px"
+              className="app-button-secondary ui-button-enhance px-4 py-2.5 font-label text-sm font-semibold h-fit sm:mb-px"
             >
               Remove photo
             </button>
@@ -200,7 +200,7 @@ export default function ProfilePage({ user, token, onUserUpdated }) {
         <button
           type="submit"
           disabled={saving}
-          className="mt-6 app-button-primary px-6 py-3.5 font-label font-semibold text-sm disabled:opacity-55 disabled:cursor-not-allowed"
+          className="mt-6 app-button-primary ui-button-enhance ui-button-shine px-6 py-3.5 font-label font-semibold text-sm disabled:opacity-55 disabled:cursor-not-allowed"
         >
           {saving ? "Saving..." : "Save Changes"}
         </button>

@@ -59,10 +59,10 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="app-card p-6 sm:p-8"
+      className="app-card ui-border-highlight animate-popIn p-5 sm:p-6"
     >
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+        <div className="ui-icon-enhance w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
@@ -80,7 +80,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
         onChange={(e) => setText(e.target.value)}
         disabled={loading || Boolean(file)}
         placeholder="Explain your situation here. Use your own words..."
-        className="w-full h-44 app-input px-5 py-4 text-base sm:text-lg leading-relaxed"
+        className="w-full h-40 app-input ui-border-highlight px-5 py-4 text-base sm:text-lg leading-relaxed"
       />
 
       <div className="mt-4 flex flex-wrap gap-2">
@@ -94,7 +94,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition ${
                 active
                   ? "bg-primary/15 text-primary border border-primary/40"
-                  : "bg-surface text-text-secondary border border-border hover:text-text-primary"
+                  : "bg-surface text-text-secondary border border-border hover:text-text-primary ui-border-highlight"
               }`}
             >
               {option}
@@ -107,10 +107,10 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors ui-border-highlight ui-button-enhance"
           disabled={loading}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="ui-icon-enhance w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -136,7 +136,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
             <button
               type="button"
               onClick={removeFile}
-              className="text-primary hover:opacity-80"
+              className="ui-icon-enhance text-primary hover:opacity-80"
               aria-label="Remove attached PDF"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,7 +150,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
       <button
         type="submit"
         disabled={!canSubmit}
-        className="mt-7 w-full app-button-primary font-label font-semibold text-base sm:text-lg py-4 disabled:opacity-55 disabled:cursor-not-allowed"
+        className="mt-7 w-full app-button-primary ui-button-soft ui-button-shine font-label font-semibold text-base sm:text-lg py-4 disabled:opacity-55 disabled:cursor-not-allowed"
       >
         {loading ? "Analyzing Situation..." : "Analyze Situation"}
       </button>

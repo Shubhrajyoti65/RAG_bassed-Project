@@ -156,7 +156,7 @@ export default function Header({ user, onLogout, isDark, onToggleTheme }) {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-20">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group shrink-0">
               <div className="w-9 h-9 sm:w-10 sm:h-10 gradient-primary-bg rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300">
@@ -324,7 +324,7 @@ export default function Header({ user, onLogout, isDark, onToggleTheme }) {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
-          <div className="absolute top-16 left-4 right-4 bg-surface rounded-2xl shadow-2xl border border-border p-4 animate-fade-in">
+          <div className="absolute top-14 sm:top-16 left-4 right-4 bg-surface rounded-2xl shadow-2xl border border-border p-4 animate-fade-in">
             <nav className="flex flex-col gap-1">
               {primaryNavLinks.map((link) => (
                 <Link
@@ -372,7 +372,7 @@ export default function Header({ user, onLogout, isDark, onToggleTheme }) {
       )}
 
       {/* Spacer for fixed header */}
-      <div className="h-16 sm:h-20" />
+      <div className="h-14 sm:h-16" />
     </>
   );
 }
