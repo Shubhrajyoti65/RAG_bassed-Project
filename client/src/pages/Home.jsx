@@ -206,9 +206,6 @@ export default function Home() {
   return (
     <div className="space-y-14 sm:space-y-16">
       <section ref={heroRef} className="home-hero-shell relative overflow-hidden rounded-4xl app-card p-7 sm:p-10 lg:p-12">
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(34,211,238,0.15),transparent_60%)]" />
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_bottom_left,rgba(29,78,216,0.12),transparent_58%)]" />
-
         <div className="relative z-10 grid gap-9 lg:grid-cols-[1.2fr_1fr] items-center">
           <div>
             <span className="hero-copy-intro inline-flex items-center rounded-full border border-border bg-surface/80 px-4 py-1.5 text-[11px] font-label font-bold tracking-[0.2em] uppercase text-primary">
@@ -216,10 +213,10 @@ export default function Home() {
             </span>
 
             <h1 className="hero-copy-title mt-5 font-headline text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.06] tracking-tight text-text-primary">
-              Clarity for your <span className="hero-title-gradient">complex world.</span>
+              Clarity for your <span className="home-hero-title-accent">complex world.</span>
             </h1>
 
-            <p className="hero-copy-text mt-5 max-w-2xl font-body text-base sm:text-lg text-text-secondary leading-relaxed">
+            <p className="hero-copy-text mt-5 max-w-2xl font-body text-base sm:text-lg font-bold text-text-secondary leading-relaxed">
               Nyaay Sahayak turns complex domestic violence case details into structured and understandable legal guidance so you can prepare confidently.
             </p>
 

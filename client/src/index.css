@@ -58,7 +58,7 @@ body {
   width: clamp(220px, 28vw, 480px);
   height: auto;
   user-select: none;
-  opacity: 0.1;
+  opacity: 0.09;
   filter: saturate(0.7) contrast(1.05);
   mix-blend-mode: soft-light;
 }
@@ -379,32 +379,50 @@ body {
 .reveal-stagger.visible > *:nth-child(3) { transition-delay: 0.19s; }
 .reveal-stagger.visible > *:nth-child(4) { transition-delay: 0.26s; }
 
-.home-hero-shell::before,
-.home-hero-shell::after {
-  content: "";
-  position: absolute;
-  border-radius: 999px;
-  pointer-events: none;
-  z-index: 0;
-  filter: blur(12px);
+.home-hero-shell {
+  --hero-gavel-size: clamp(190px, 28vw, 390px);
+  --hero-gavel-pos-x: 38%;
+  --hero-gavel-pos-y: 56%;
+  border: 1px solid color-mix(in srgb, var(--border) 86%, #ffffff 14%);
+  background-image:
+    linear-gradient(180deg, rgba(236, 244, 253, 0.84) 0%, rgba(220, 236, 252, 0.9) 46%, rgba(183, 219, 248, 0.98) 100%),
+    radial-gradient(circle at 100% 0%, rgba(37, 99, 235, 0.34) 0%, rgba(37, 99, 235, 0.16) 34%, rgba(37, 99, 235, 0.04) 62%, transparent 74%),
+    url("/images/gavelus.png");
+  background-size: cover, 100% 100%, var(--hero-gavel-size) auto;
+  background-position: center, center, var(--hero-gavel-pos-x) var(--hero-gavel-pos-y);
+  background-repeat: no-repeat, no-repeat, no-repeat;
 }
 
-.home-hero-shell::before {
-  width: 210px;
-  height: 210px;
-  right: -54px;
-  top: -44px;
-  background: color-mix(in srgb, var(--primary-light) 24%, transparent);
-  animation: ambient-drift-a 9s ease-in-out infinite;
+.dark .home-hero-shell {
+  border-color: color-mix(in srgb, #ffffff 14%, var(--border));
+  background-image:
+    linear-gradient(108deg, rgba(3, 10, 25, 0.9) 5%, rgba(6, 21, 49, 0.82) 48%, rgba(13, 79, 102, 0.64) 100%),
+    radial-gradient(circle at var(--hero-gavel-pos-x) var(--hero-gavel-pos-y), rgba(37, 99, 235, 0.26) 0%, rgba(37, 99, 235, 0.08) 40%, transparent 66%),
+    url("/images/gavelus.png");
 }
 
-.home-hero-shell::after {
-  width: 170px;
-  height: 170px;
-  left: -48px;
-  bottom: -40px;
-  background: color-mix(in srgb, var(--primary) 18%, transparent);
-  animation: ambient-drift-b 10.5s ease-in-out infinite;
+@media (max-width: 1024px) {
+  .home-hero-shell {
+    --hero-gavel-pos-x: 50%;
+    --hero-gavel-pos-y: 30%;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-hero-shell {
+    --hero-gavel-size: clamp(160px, 52vw, 260px);
+    --hero-gavel-pos-y: 26%;
+  }
+}
+
+.home-hero-title-accent {
+  color: color-mix(in srgb, var(--primary) 72%, #0ea5e9 28%);
+  text-shadow: none;
+}
+
+.dark .home-hero-title-accent {
+  color: #38bdf8;
+  text-shadow: none;
 }
 
 .hero-copy-intro,
@@ -582,8 +600,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-hero-shell::before,
-  .home-hero-shell::after,
   .hero-copy-intro,
   .hero-copy-title,
   .hero-copy-text,

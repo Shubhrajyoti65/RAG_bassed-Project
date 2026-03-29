@@ -9,15 +9,85 @@ const initialForm = {
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
+const AUTH_BG_FILES = [
+  "ChatGPT Image Mar 29, 2026, 08_33_37 PM.png",
+  "ChatGPT Image Mar 29, 2026, 08_33_59 PM.png",
+  "ChatGPT Image Mar 29, 2026, 08_34_04 PM.png",
+  "ChatGPT Image Mar 30, 2026, 01_17_52 AM.png",
+  "Gemini_Generated_Image_191kuv191kuv191k.png",
+  "Gemini_Generated_Image_5aepxz5aepxz5aep.png",
+  "Gemini_Generated_Image_grpqdygrpqdygrpq.png",
+  "Gemini_Generated_Image_w917iiw917iiw917.png",
+];
+
+function getAuthBackgroundPath(fileName) {
+  return `/BGS/${encodeURIComponent(fileName)}`;
+}
+
 export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, isDark }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState(searchParams.get("tab") === "signup" ? "signup" : "login");
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
   const [googleAvailable, setGoogleAvailable] = useState(false);
+  const [authBackground, setAuthBackground] = useState(() => getAuthBackgroundPath(AUTH_BG_FILES[0]));
   const googleButtonRef = useRef(null);
   const googleAuthRef = useRef(onGoogleAuth);
   const googleConfigured = Boolean(GOOGLE_CLIENT_ID);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || AUTH_BG_FILES.length === 0) {
+      return;
+    }
+
+    const previousIndexRaw = window.sessionStorage.getItem("auth-left-bg-index");
+    const previousIndex = Number.parseInt(previousIndexRaw ?? "-1", 10);
+    let candidateIndex = Math.floor(Math.random() * AUTH_BG_FILES.length);
+
+    if (AUTH_BG_FILES.length > 1 && Number.isInteger(previousIndex) && previousIndex >= 0 && previousIndex === candidateIndex) {
+      candidateIndex = (candidateIndex + 1) % AUTH_BG_FILES.length;
+    }
+
+    let cancelled = false;
+    let attempts = 0;
+
+    function tryLoadAt(index) {
+      const src = getAuthBackgroundPath(AUTH_BG_FILES[index]);
+      const probe = new window.Image();
+
+      probe.onload = () => {
+        if (cancelled) {
+          return;
+        }
+        setAuthBackground(src);
+        window.sessionStorage.setItem("auth-left-bg-index", String(index));
+      };
+
+      probe.onerror = () => {
+        if (cancelled) {
+          return;
+        }
+
+        attempts += 1;
+        if (attempts >= AUTH_BG_FILES.length) {
+          const fallbackSrc = getAuthBackgroundPath(AUTH_BG_FILES[0]);
+          setAuthBackground(fallbackSrc);
+          window.sessionStorage.setItem("auth-left-bg-index", "0");
+          return;
+        }
+
+        tryLoadAt((index + 1) % AUTH_BG_FILES.length);
+      };
+
+      probe.src = src;
+    }
+
+    tryLoadAt(candidateIndex);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     googleAuthRef.current = onGoogleAuth;
@@ -153,47 +223,83 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
   }
 
   return (
-    <div className="max-w-6xl w-full mx-auto animate-fade-in">
+    <div className="max-w-5xl w-full mx-auto animate-fade-in">
       <div className="app-card ui-border-highlight overflow-hidden p-0">
         <div className="grid md:grid-cols-2">
-          <section className="gradient-primary-bg px-8 py-10 sm:px-10 sm:py-11 text-white">
-            <span className="inline-flex items-center rounded-full bg-white/12 px-3.5 py-1 font-label text-[11px] font-bold tracking-[0.16em] uppercase text-white/85">
+          <section
+            className={`relative isolate overflow-hidden px-7 py-8 sm:px-8 sm:py-9 border-t ${
+              isDark
+                ? "border-white/10 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+                : "border-black/10 text-slate-900 shadow-[inset_0_1px_0_rgba(0,0,0,0.08)]"
+            }`}
+          >
+            <div
+              className="absolute inset-0 -z-20"
+              style={{
+                backgroundImage: `url("${authBackground}")`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                filter: isDark ? "contrast(1.06) brightness(0.95)" : "contrast(1.08) brightness(0.98) saturate(1.12)",
+              }}
+              aria-hidden="true"
+            />
+            <div
+              className="absolute inset-0 -z-10"
+              style={{
+                backgroundImage: isDark
+                  ? "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.68)), linear-gradient(rgba(0,0,0,0.36), rgba(0,0,0,0.36))"
+                  : "linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0.14)), linear-gradient(to top, rgba(15,23,42,0.14), rgba(15,23,42,0.03) 44%, rgba(15,23,42,0) 70%), radial-gradient(circle at 18% 16%, rgba(15,23,42,0.2) 0%, rgba(15,23,42,0.08) 42%, rgba(15,23,42,0) 76%)",
+              }}
+              aria-hidden="true"
+            />
+
+            <span
+              className={`inline-flex items-center rounded-full px-3.5 py-1 font-label text-[11px] font-bold tracking-[0.16em] uppercase ${
+                isDark ? "bg-white/12 text-white/85" : "bg-white/70 text-slate-900 border border-black/10"
+              }`}
+            >
               Secure access
             </span>
 
-            <h2 className="mt-5 font-headline text-3xl sm:text-4xl font-bold leading-tight">
-              {mode === "signup" ? "Create your legal workspace" : "Welcome back to your chambers"}
-            </h2>
+            <div
+              className={`mt-4 rounded-2xl px-4 py-4 sm:px-5 sm:py-5 ${
+                isDark
+                  ? "bg-black/24 border border-white/10"
+                  : "bg-white/78 border border-black/12 shadow-sm backdrop-blur-[2px]"
+              }`}
+            >
+              <h2 className={`font-headline text-3xl sm:text-4xl font-bold leading-tight ${isDark ? "text-white" : "text-slate-950"}`}>
+                {mode === "signup" ? "Create your legal workspace" : "Welcome back to your chambers"}
+              </h2>
 
-            <p className="mt-4 font-body text-white/85 leading-relaxed">
-              {mode === "signup"
-                ? "Register to save analyses, track precedent research, and continue your workflow across sessions."
-                : "Sign in to resume your ongoing analysis and review your prior case summaries."}
-            </p>
+              <p className={`mt-3 font-body leading-relaxed ${isDark ? "text-slate-200/90" : "text-slate-900 font-medium"}`}>
+                {mode === "signup"
+                  ? "Register to save analyses, track precedent research, and continue your workflow across sessions."
+                  : "Sign in to resume your ongoing analysis and review your prior case summaries."}
+              </p>
+            </div>
 
-            <div className="mt-8 space-y-3">
-              <div className="rounded-2xl bg-white/10 px-4 py-3">
-                <p className="font-label text-xs font-semibold uppercase tracking-[0.14em] text-white/70">Privacy first</p>
-                <p className="font-body text-sm text-white/90 mt-1">Your submitted data remains account-bound and access controlled.</p>
+            <div className="mt-6 space-y-2.5">
+              <div className={`rounded-2xl px-4 py-2.5 backdrop-blur-[1px] ${isDark ? "bg-white/12 border border-white/10" : "bg-white/80 border border-black/12"}`}>
+                <p className={`font-label text-xs font-semibold uppercase tracking-[0.14em] ${isDark ? "text-white/70" : "text-slate-700"}`}>Privacy first</p>
+                <p className={`font-body text-sm mt-1 ${isDark ? "text-white/90" : "text-slate-900/90"}`}>Your submitted data remains account-bound and access controlled.</p>
               </div>
-              <div className="rounded-2xl bg-white/10 px-4 py-3">
-                <p className="font-label text-xs font-semibold uppercase tracking-[0.14em] text-white/70">Built for clarity</p>
-                <p className="font-body text-sm text-white/90 mt-1">Structured legal summaries designed for practical consultation prep.</p>
+              <div className={`rounded-2xl px-4 py-2.5 backdrop-blur-[1px] ${isDark ? "bg-white/12 border border-white/10" : "bg-white/80 border border-black/12"}`}>
+                <p className={`font-label text-xs font-semibold uppercase tracking-[0.14em] ${isDark ? "text-white/70" : "text-slate-700"}`}>Built for clarity</p>
+                <p className={`font-body text-sm mt-1 ${isDark ? "text-white/90" : "text-slate-900/90"}`}>Structured legal summaries designed for practical consultation prep.</p>
               </div>
             </div>
           </section>
 
-          <section className="p-8 sm:p-10 bg-surface">
-            <div className="mb-7">
+          <section className="p-7 sm:p-8 bg-surface">
+            <div className="mb-5">
               <h3 className="font-headline text-2xl font-bold text-text-primary">
                 {mode === "signup" ? "Create account" : "Sign in"}
               </h3>
-              <p className="font-body text-sm text-text-secondary mt-1.5">
-                {mode === "signup" ? "Start with your basic details." : "Use your registered email and password."}
-              </p>
             </div>
 
-            <div className="relative mb-6 grid grid-cols-2 rounded-xl border border-border p-1 bg-surface ui-border-highlight transition-all duration-300">
+            <div className="relative mb-5 grid grid-cols-2 rounded-xl border border-border p-1 bg-surface ui-border-highlight transition-all duration-300">
               <div
                 className="absolute top-1 bottom-1 rounded-lg bg-primary transition-all duration-200"
                 style={{
@@ -231,7 +337,7 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3.5">
               {mode === "signup" && (
                 <div>
                   <label className="block mb-1.5 font-label text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
@@ -285,7 +391,7 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full app-button-primary ui-button-enhance ui-button-shine py-3.5 font-label font-bold text-sm disabled:opacity-55 disabled:cursor-not-allowed"
+                className="w-full app-button-primary ui-button-enhance ui-button-shine py-3 font-label font-bold text-sm disabled:opacity-55 disabled:cursor-not-allowed"
               >
                 {loading ? "Authenticating..." : mode === "signup" ? "Create account" : "Sign in"}
               </button>
@@ -322,7 +428,7 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
               )}
             </form>
 
-            <p className="mt-6 text-center font-body text-sm text-text-secondary">
+            <p className="mt-4 text-center font-body text-sm text-text-secondary">
               {mode === "login" ? "New here? " : "Already have an account? "}
               <button
                 type="button"
