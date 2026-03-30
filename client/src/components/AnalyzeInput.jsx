@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 
 const CATEGORY_OPTIONS = [
-  "Employment",
   "Property",
   "Domestic Violence",
   "Maintenance",
@@ -54,12 +53,15 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
     await onAnalyze({ text: payloadText });
   }
 
-  const canSubmit = !loading && (Boolean(file) || Boolean(text.trim()));
+  const MIN_CHARS = 50;
+  const charCount = text.trim().length;
+  const meetsMinimum = charCount >= MIN_CHARS;
+  const canSubmit = !loading && (Boolean(file) || meetsMinimum);
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="app-card ui-border-highlight animate-popIn p-5 sm:p-6"
+      className="app-card ui-border-highlight animate-popIn p-6 sm:p-7 max-w-4xl mx-auto"
     >
       <div className="flex items-center gap-3 mb-4">
         <div className="ui-icon-enhance w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -80,8 +82,39 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
         onChange={(e) => setText(e.target.value)}
         disabled={loading || Boolean(file)}
         placeholder="Explain your situation here. Use your own words..."
-        className="w-full h-40 app-input ui-border-highlight px-5 py-4 text-base sm:text-lg leading-relaxed"
+        className={`w-full h-40 app-input ui-border-highlight px-4 py-3 text-base leading-relaxed transition-all duration-200 ${!file && charCount > 0 && !meetsMinimum ? 'border-amber-400/60 focus:border-amber-400' : ''}`}
       />
+
+      {/* Character counter -- only shown when typing text (not uploading PDF) */}
+      {!file && (
+        <div className="mt-2 px-1">
+          <div className="flex items-center justify-between mb-1">
+            <span className={`font-label text-xs font-medium transition-colors duration-200 ${
+              charCount === 0
+                ? 'text-text-secondary'
+                : meetsMinimum
+                ? 'text-green-500'
+                : 'text-amber-400'
+            }`}>
+              {charCount === 0
+                ? `Minimum ${MIN_CHARS} characters required`
+                : meetsMinimum
+                ? `${charCount} chars — ✓ Ready to analyze`
+                : `${charCount} / ${MIN_CHARS} — ${MIN_CHARS - charCount} more needed`}
+            </span>
+            <span className="font-label text-xs text-text-secondary">{charCount} chars</span>
+          </div>
+          {/* Progress bar */}
+          <div className="w-full h-1 rounded-full bg-border overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-300 ${
+                meetsMinimum ? 'bg-green-500' : 'bg-amber-400'
+              }`}
+              style={{ width: `${Math.min(100, (charCount / MIN_CHARS) * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="mt-4 flex flex-wrap gap-2">
         {CATEGORY_OPTIONS.map((option) => {
@@ -103,7 +136,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
         })}
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-3">
+      <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
@@ -150,7 +183,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
       <button
         type="submit"
         disabled={!canSubmit}
-        className="mt-7 w-full app-button-primary ui-button-soft ui-button-shine font-label font-semibold text-base sm:text-lg py-4 disabled:opacity-55 disabled:cursor-not-allowed"
+        className="mt-6 w-full app-button-primary ui-button-soft ui-button-shine font-label font-semibold text-base py-4 disabled:opacity-55 disabled:cursor-not-allowed"
       >
         {loading ? "Analyzing Situation..." : "Analyze Situation"}
       </button>

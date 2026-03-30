@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import AuthPanel from "./components/AuthPanel";
 import Layout from "./components/Layout";
@@ -190,7 +190,7 @@ function App() {
   }
 
   return (
-    <Layout user={user} onLogout={clearSession} isDark={isDark} onToggleTheme={toggleTheme}>
+    <Layout user={user} onLogout={clearSession} isDark={isDark} onToggleTheme={toggleTheme} onNewAnalysis={reset}>
         <Routes>
           <Route path="/" element={<Home isDark={isDark} />} />
           <Route path="/home" element={<Navigate to="/" replace />} />

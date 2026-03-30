@@ -1,12 +1,15 @@
 import AnalyzeInput from "../components/AnalyzeInput";
 import AnalyzeResult from "../components/AnalyzeResult";
+import AnalyzingLoader from "../components/AnalyzingLoader";
 import ErrorAlert from "../components/ErrorAlert";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function Analyze({ token, loadUserHistory, result, loading, error, analysisTimeMs, analyze, reset }) {
+  const [userInput, setUserInput] = useState(null);
   const analysisResult = useMemo(() => result || null, [result]);
 
   async function handleAnalyze(payload) {
+    setUserInput(payload);
     const outcome = await analyze({ ...payload, token });
     if (outcome?.ok) {
       await loadUserHistory();
@@ -14,6 +17,7 @@ export default function Analyze({ token, loadUserHistory, result, loading, error
   }
 
   function handleRestart() {
+    setUserInput(null);
     reset();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -41,15 +45,7 @@ export default function Analyze({ token, loadUserHistory, result, loading, error
       {!analysisResult ? (
         <div className="space-y-5">
           <AnalyzeInput onAnalyze={handleAnalyze} loading={loading} />
-          {loading && (
-            <div className="app-card ui-border-highlight animate-popIn p-8 flex flex-col items-center gap-4">
-              <div className="w-14 h-14 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-              <p className="font-headline text-text-primary font-medium">Analyzing your situation...</p>
-              <p className="font-body text-sm text-text-primary text-center max-w-md">
-                Processing facts, matching legal provisions, and preparing a structured breakdown.
-              </p>
-            </div>
-          )}
+          {loading && <AnalyzingLoader />}
           {error && <ErrorAlert message={error} onDismiss={reset} />}
         </div>
       ) : (
@@ -58,11 +54,10 @@ export default function Analyze({ token, loadUserHistory, result, loading, error
             result={analysisResult}
             analysisTimeMs={analysisTimeMs}
             onRestart={handleRestart}
+            userInput={userInput}
           />
         </div>
       )}
     </div>
   );
 }
-
-

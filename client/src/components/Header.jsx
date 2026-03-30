@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
-export default function Header({ user, onLogout, isDark, onToggleTheme }) {
+export default function Header({ user, onLogout, isDark, onToggleTheme, onNewAnalysis }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -105,6 +105,11 @@ export default function Header({ user, onLogout, isDark, onToggleTheme }) {
   const primaryNavLinks = user ? userCoreNavLinks : guestPrimaryNavLinks;
 
   function handleNavClick(e, to) {
+    // Always reset analysis state when navigating to /analyze
+    if (to === "/analyze") {
+      onNewAnalysis?.();
+    }
+
     if (to === "/") {
       e.preventDefault();
 
@@ -263,7 +268,7 @@ export default function Header({ user, onLogout, isDark, onToggleTheme }) {
                         className="block w-full text-left font-label text-sm px-3 py-2 rounded-xl text-text-secondary transition-colors hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary">
                         Full History
                       </Link>
-                      <Link to="/analyze" onClick={() => setProfileMenuOpen(false)}
+                      <Link to="/analyze" onClick={() => { setProfileMenuOpen(false); onNewAnalysis?.(); }}
                         className="block w-full text-left font-label text-sm px-3 py-2 rounded-xl text-text-secondary transition-colors hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary">
                         Analyze
                       </Link>
