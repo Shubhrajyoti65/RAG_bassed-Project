@@ -152,6 +152,31 @@ body {
   z-index: 1;
 }
 
+.app-card.history-case-card::before {
+  background: none;
+  opacity: 0;
+}
+
+.app-card.history-case-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: auto;
+  width: 4rem;
+  height: 4rem;
+  border-bottom-left-radius: 9999px;
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  pointer-events: none;
+  z-index: 1;
+  transform-origin: top right;
+  transition: transform 300ms ease-in-out;
+}
+
+.app-card.history-case-card:hover::after {
+  transform: scale(1.15);
+}
+
 .dark .app-card {
   box-shadow: 0 8px 22px rgba(2, 6, 23, 0.32);
 }
@@ -165,6 +190,15 @@ body {
     linear-gradient(155deg, color-mix(in srgb, var(--surface) 86%, #ffffff 14%) 0%, transparent 46%),
     radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--primary-light) 15%, transparent) 0%, transparent 54%);
   opacity: 0.6;
+}
+
+.dark .app-card.history-case-card::before {
+  background: none;
+  opacity: 0;
+}
+
+.dark .app-card.history-case-card::after {
+  background: color-mix(in srgb, var(--primary-light) 16%, transparent);
 }
 
 .app-card:not(.home-hero-shell):hover {
@@ -341,7 +375,7 @@ body {
 }
 
 .animate-popIn {
-  animation: popIn 0.35s ease-out both;
+  animation: popIn 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-fade-in {

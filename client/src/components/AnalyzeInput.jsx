@@ -94,7 +94,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition ${
                 active
                   ? "bg-primary/15 text-primary border border-primary/40"
-                  : "bg-surface text-text-secondary border border-border hover:text-text-primary ui-border-highlight"
+                  : "bg-surface text-text-primary border border-border hover:text-primary ui-border-highlight"
               }`}
             >
               {option}
@@ -107,7 +107,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors ui-border-highlight ui-button-enhance"
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-text-primary hover:text-primary transition-colors ui-border-highlight ui-button-enhance"
           disabled={loading}
         >
           <svg className="ui-icon-enhance w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

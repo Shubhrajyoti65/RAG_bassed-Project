@@ -33,7 +33,7 @@ export default function Analyze({ token, loadUserHistory, result, loading, error
         <h1 className="mt-4 font-headline text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight text-text-primary">
           Clarity for your <span className="hero-title-gradient">complex world.</span>
         </h1>
-        <p className="mt-5 font-body text-lg text-text-secondary max-w-3xl mx-auto leading-relaxed">
+        <p className="mt-5 font-body text-lg text-text-primary max-w-3xl mx-auto leading-relaxed">
           No jargon. No confusion. Just structured, calm, and actionable legal guidance.
         </p>
       </section>
@@ -45,7 +45,7 @@ export default function Analyze({ token, loadUserHistory, result, loading, error
             <div className="app-card ui-border-highlight animate-popIn p-8 flex flex-col items-center gap-4">
               <div className="w-14 h-14 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
               <p className="font-headline text-text-primary font-medium">Analyzing your situation...</p>
-              <p className="font-body text-sm text-text-secondary text-center max-w-md">
+              <p className="font-body text-sm text-text-primary text-center max-w-md">
                 Processing facts, matching legal provisions, and preparing a structured breakdown.
               </p>
             </div>

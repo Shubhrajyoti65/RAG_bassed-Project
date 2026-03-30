@@ -313,11 +313,11 @@ export default function Home() {
         {TRUST_STATS.map((stat, index) => (
           <article
             key={stat.label}
-            className="app-card ui-border-highlight animate-popIn p-5 text-center"
+            className="app-card ui-border-highlight animate-popIn p-5 text-center ring-2 ring-primary/40 shadow-xl hover:scale-[1.045] hover:ring-primary/80 hover:shadow-primary/20 transition-all duration-400 bg-linear-to-br from-surface to-surface/80"
             style={{ animationDelay: `${index * 0.07}s` }}
           >
-            <p className="font-headline text-3xl font-bold text-text-primary">{stat.value}</p>
-            <p className="mt-1 font-label text-xs font-semibold uppercase tracking-[0.17em] text-text-secondary">{stat.label}</p>
+            <p className="font-headline text-3xl font-bold text-text-primary drop-shadow-[0_1px_6px_rgba(80,180,255,0.18)]">{stat.value}</p>
+            <p className="mt-1 font-label text-xs font-semibold uppercase tracking-[0.17em] text-primary drop-shadow-[0_1px_4px_rgba(80,180,255,0.10)]">{stat.label}</p>
           </article>
         ))}
       </section>

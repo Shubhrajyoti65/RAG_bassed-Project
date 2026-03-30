@@ -65,11 +65,11 @@ export default function HistoryPage({ history = [], onSelect }) {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredHistory.map((item, index) => (
             <article
               key={item.id}
-              className="app-card ui-border-highlight animate-popIn p-6 flex flex-col group cursor-pointer relative overflow-hidden"
+              className="app-card history-case-card ui-border-highlight animate-popIn p-5 min-h-56 flex flex-col group cursor-pointer relative overflow-hidden"
               style={{ animationDelay: `${index * 0.06}s` }}
               onClick={() => onSelect(item)}
               role="button"
@@ -80,24 +80,22 @@ export default function HistoryPage({ history = [], onSelect }) {
                 }
               }}
             >
-              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-bl-full -mr-2 -mt-2 transition-transform duration-300 group-hover:scale-125" />
-
-              <div className="flex items-center justify-between mb-4 relative z-10">
-                <span className="px-3 py-1.5 bg-surface font-label text-xs font-bold uppercase tracking-wider rounded-full text-text-secondary border border-border">
+              <div className="flex items-center justify-between mb-3 relative z-10">
+                <span className="px-2.5 py-1 bg-surface font-label text-xs font-bold uppercase tracking-wider rounded-full text-text-primary border border-border">
                   #{index + 1} {item.inputType}
                 </span>
-                <span className="font-label text-xs text-text-secondary">{formatDate(item.createdAt)}</span>
+                <span className="font-label text-xs text-text-primary">{formatDate(item.createdAt)}</span>
               </div>
 
-              <div className="grow mb-6 relative z-10">
-                <p className="font-body text-text-secondary text-sm leading-relaxed line-clamp-4">
+              <div className="grow mb-4 relative z-10">
+                <p className="font-body text-text-primary text-sm leading-relaxed line-clamp-3">
                   {item.inputPreview || "No preview available for this document."}
                 </p>
               </div>
 
-              <div className="mt-auto pt-4 border-t border-border flex items-center justify-between relative z-10">
+              <div className="mt-auto pt-3 border-t border-border flex items-center justify-between relative z-10">
                 <span className="font-label text-xs font-bold text-primary">Open result</span>
-                <div className="ui-icon-enhance w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white text-primary transition-all duration-200">
+                <div className="ui-icon-enhance w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white text-primary transition-all duration-200">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                   </svg>

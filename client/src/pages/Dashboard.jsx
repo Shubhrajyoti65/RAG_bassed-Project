@@ -188,14 +188,14 @@ export default function Dashboard({ user, quoteSeed, history = [], onSelect }) {
                 }}
               >
                 <div className="flex items-center justify-between mb-3 relative z-10">
-                  <span className="px-2.5 py-1 bg-surface font-label text-xs font-bold uppercase tracking-wider rounded-full text-text-secondary border border-border">
+                  <span className="px-2.5 py-1 bg-surface font-label text-xs font-bold uppercase tracking-wider rounded-full text-text-primary border border-border">
                     #{index + 1} {item.inputType}
                   </span>
-                  <span className="font-label text-xs text-text-secondary">{formatDate(item.createdAt)}</span>
+                  <span className="font-label text-xs text-text-primary">{formatDate(item.createdAt)}</span>
                 </div>
 
                 <div className="grow mb-4 relative z-10">
-                  <p className="font-body text-text-secondary text-sm leading-relaxed line-clamp-3">
+                  <p className="font-body text-text-primary text-sm leading-relaxed line-clamp-3">
                     {item.inputPreview || "No preview available for this document."}
                   </p>
                 </div>

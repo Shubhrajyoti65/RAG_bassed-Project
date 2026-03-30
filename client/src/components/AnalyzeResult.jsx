@@ -80,7 +80,7 @@ export default function AnalyzeResult({ result, analysisTimeMs, onRestart }) {
         <article className="rounded-2xl p-6 transition-all duration-300 ui-panel-box ui-border-highlight">
           <p className="font-label text-sm font-semibold text-primary">Critical Window</p>
           <h3 className="font-headline text-xl font-semibold text-text-primary mt-2">What Needs Timely Action</h3>
-          <p className="font-body text-sm text-text-secondary mt-3 leading-relaxed">
+          <p className="font-body text-sm text-text-primary mt-3 leading-relaxed">
             {criticalCase
               ? `Closest precedent: ${criticalCase.caseTitle} (${criticalCase.year}) with ${criticalCase.similarityScore}% similarity. Prioritize chronology, supporting records, and immediate protective steps.`
               : "Act early to preserve records, sequence events, and prepare issue-wise documentation for formal legal consultation."}
@@ -100,14 +100,14 @@ export default function AnalyzeResult({ result, analysisTimeMs, onRestart }) {
               <span className="ui-icon-enhance w-7 h-7 shrink-0 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center mt-0.5">
                 {index + 1}
               </span>
-              <p className="font-body text-text-secondary leading-relaxed">{step}</p>
+              <p className="font-body text-text-primary leading-relaxed">{step}</p>
             </div>
           ))}
         </div>
       </section>
 
       {result?.disclaimer && (
-        <p className="mt-6 text-xs leading-relaxed text-text-secondary">
+        <p className="mt-6 text-xs leading-relaxed text-text-primary">
           {result.disclaimer}
         </p>
       )}
