@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+// Mongoose schema for user profiles and authentication data
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -17,7 +18,28 @@ const userSchema = new mongoose.Schema(
     },
     passwordHash: {
       type: String,
-      required: true,
+      default: null,
+    },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+    googleId: {
+      type: String,
+      default: null,
+      unique: true,
+      sparse: true,
+    },
+    avatarUrl: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    sex: {
+      type: String,
+      enum: ["", "male", "female", "other", "prefer_not_to_say"],
+      default: "",
     },
   },
   {

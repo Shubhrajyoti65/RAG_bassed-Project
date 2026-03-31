@@ -1,7 +1,40 @@
-node_modules/
-.env
-server/vectorStore/vectorData.json
-client/dist/
-*.log
+```gitignore id="git05"
+# Python virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# VS Code
+.vscode/
+
+# Node modules
+node_modules/
+
+# Build / dist
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+*.log
+
+# FAISS indexes (optional - do not push generated index files)
+rag_service/faiss_index/
+
+# Model cache / huggingface downloads
+.cache/
+huggingface/
+
+# OS files
+.DS_Store
+Thumbs.db
+```

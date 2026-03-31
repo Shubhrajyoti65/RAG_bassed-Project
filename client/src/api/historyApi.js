@@ -1,3 +1,4 @@
+// Loads the user's complete history of case analyses from the server
 export async function fetchHistory(token) {
   const response = await fetch("/api/history", {
     headers: { Authorization: `Bearer ${token}` },

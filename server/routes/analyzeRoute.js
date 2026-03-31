@@ -6,6 +6,7 @@ const { analyzeCase } = require("../services/ragService");
 const authenticate = require("../middleware/authenticate");
 const { saveHistory } = require("../services/historyService");
 
+// Route to analyze a legal case from either a PDF file upload or direct text input
 router.post(
   "/analyze",
   authenticate,
@@ -41,7 +42,8 @@ router.post(
         });
       }
 
-      const analysis = await analyzeCase(caseText);
+      const category = (req.body?.category || "general").toLowerCase();
+      const analysis = await analyzeCase(caseText, category);
       try {
         await saveHistory({
           userId: req.user.id,

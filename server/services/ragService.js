@@ -1,7 +1,12 @@
 const PYTHON_RAG_URL =
   process.env.PYTHON_RAG_URL || "http://localhost:8000/analyze";
 
+<<<<<<< HEAD
+async function analyzeCase(caseText, category = "general") {
+=======
+// Sends case text to the Python RAG service for analysis
 async function analyzeCase(caseText) {
+>>>>>>> 2e202d63773fc13c296e892ea7239941b089be3d
   const text = String(caseText || "").trim();
   if (!text) {
     throw new Error("Case text is required");
@@ -12,7 +17,7 @@ async function analyzeCase(caseText) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text, category }),
   });
 
   const raw = await response.text();
@@ -37,6 +42,7 @@ async function analyzeCase(caseText) {
   return parsed;
 }
 
+// Validates that the LLM analysis response contains all required fields
 function validateAnalysis(analysis) {
   const required = ["summary", "legalProvisions", "similarCases", "disclaimer"];
   for (const field of required) {

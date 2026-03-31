@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+// Mongoose schema for storing legal case analysis history
 const historySchema = new mongoose.Schema(
   {
     userId: {
