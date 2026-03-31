@@ -41,7 +41,8 @@ router.post(
         });
       }
 
-      const analysis = await analyzeCase(caseText);
+      const category = (req.body?.category || "general").toLowerCase();
+      const analysis = await analyzeCase(caseText, category);
       try {
         await saveHistory({
           userId: req.user.id,

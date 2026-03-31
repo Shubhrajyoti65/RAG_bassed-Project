@@ -102,34 +102,70 @@ class SentenceTransformerEmbeddingFunction(Embeddings):
         return vector.tolist()
 
 
-def build_and_persist_faiss_index(config: IngestConfig) -> tuple[int, int]:
-    cases = load_case_records(config.root_dir)
+
+def build_and_persist_faiss_index(
+    config: IngestConfig,
+    case_category: str = "general"
+) -> tuple[int, int]:
+
+    cases = load_case_records(config.root_dir, case_category)
     documents = build_documents(cases)
     chunks = chunk_documents(documents)
 
     embeddings = get_embedding_function()
     vector_store = FAISS.from_documents(chunks, embeddings)
-    config.index_dir.mkdir(parents=True, exist_ok=True)
-    vector_store.save_local(str(config.index_dir))
+
+    index_path = config.index_dir / case_category
+    index_path.mkdir(parents=True, exist_ok=True)
+
+    vector_store.save_local(str(index_path))
 
     return len(cases), len(chunks)
 
 
-def load_case_records(root_dir: Path) -> list[dict]:
+
+
+
+def load_case_records(root_dir: Path, case_category: str = "general") -> list[dict]:
     merged = {}
-    for item in load_imported_cases(root_dir):
+
+    for item in load_imported_cases(root_dir, case_category):
         case_number = str(item.get("caseNumber", "")).strip()
+
+        # fallback to title if case number missing
+        if not case_number:
+            case_number = str(item.get("caseTitle", "")).strip()
+
         if not case_number:
             continue
+
         merged[case_number] = item
 
-    # Keep only likely High Court domestic-violence records.
+    # property cases should NOT use DV filter
+    if case_category.lower() == "property":
+        return list(merged.values())
+
+    # existing mixed cases keep DV filter
     filtered = [item for item in merged.values() if is_target_case(item)]
     return filtered
 
 
-def load_imported_cases(root_dir: Path) -> list[dict]:
-    imported_file = root_dir / "server" / "data" / "importedCases.json"
+
+
+
+def load_imported_cases(root_dir: Path, case_category: str = "general") -> list[dict]:
+    """
+    Load cleaned JSON corpus based on selected category.
+
+    property -> propertyCases.json
+    others   -> importedCases.json
+    """
+
+    if case_category.lower() == "property":
+        imported_file = root_dir / "server" / "data" / "propertyCases.json"
+    else:
+        imported_file = root_dir / "server" / "data" / "importedCases.json"
+
     if not imported_file.exists():
         return []
 
@@ -139,6 +175,9 @@ def load_imported_cases(root_dir: Path) -> list[dict]:
 
     parsed = json.loads(raw)
     return parsed if isinstance(parsed, list) else []
+
+
+
 
 
 def is_target_case(item: dict) -> bool:
@@ -485,7 +524,8 @@ def _read_env_file_value(env_file: Path, key: str) -> str:
     return ""
 
 
-def build_default_query_config() -> QueryConfig:
+
+def build_default_query_config(case_category: str = "general") -> QueryConfig:
     service_dir = Path(__file__).resolve().parent
     root_dir = service_dir.parent
     server_env_file = root_dir / "server" / ".env"
@@ -493,18 +533,22 @@ def build_default_query_config() -> QueryConfig:
     api_key = os.getenv("GEMINI_API_KEY", "").strip() or _read_env_file_value(
         server_env_file, "GEMINI_API_KEY"
     )
+
     if not api_key:
         raise ValueError("GEMINI_API_KEY is required")
 
     generation_model = os.getenv("GENERATION_MODEL", "").strip() or _read_env_file_value(
         server_env_file, "GENERATION_MODEL"
     )
+
     if not generation_model:
         generation_model = GENERATION_MODEL_NAME
 
     return QueryConfig(
-        index_dir=service_dir / "faiss_index",
+        index_dir=service_dir / "faiss_index" / case_category,
         gemini_api_key=api_key,
         generation_model=generation_model,
         top_k=DEFAULT_TOP_K,
     )
+
+

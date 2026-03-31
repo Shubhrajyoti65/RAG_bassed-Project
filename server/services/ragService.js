@@ -1,7 +1,7 @@
 const PYTHON_RAG_URL =
   process.env.PYTHON_RAG_URL || "http://localhost:8000/analyze";
 
-async function analyzeCase(caseText) {
+async function analyzeCase(caseText, category = "general") {
   const text = String(caseText || "").trim();
   if (!text) {
     throw new Error("Case text is required");
@@ -12,7 +12,7 @@ async function analyzeCase(caseText) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text, category }),
   });
 
   const raw = await response.text();

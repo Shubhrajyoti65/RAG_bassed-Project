@@ -7,14 +7,14 @@ export function useAnalysis() {
   const [error, setError] = useState(null);
   const [analysisTimeMs, setAnalysisTimeMs] = useState(null);
 
-  async function analyze({ text, file, token }) {
+  async function analyze({ text, file, category, token }) {
     const startedAt = performance.now();
     setLoading(true);
     setError(null);
     setResult(null);
     setAnalysisTimeMs(null);
     try {
-      const data = await submitAnalysis({ text, file, token });
+      const data = await submitAnalysis({ text, file, category, token });
       setResult(data);
       setAnalysisTimeMs(Math.max(0, Math.round(performance.now() - startedAt)));
       return { ok: true, data };

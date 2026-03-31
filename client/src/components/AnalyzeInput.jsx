@@ -42,7 +42,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
     }
 
     if (file) {
-      await onAnalyze({ file });
+      await onAnalyze({ file, category: selectedCategory });
       return;
     }
 
@@ -50,7 +50,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
       ? `[Category: ${selectedCategory}]\n${trimmed}`
       : trimmed;
 
-    await onAnalyze({ text: payloadText });
+    await onAnalyze({ text: payloadText, category: selectedCategory });
   }
 
   const MIN_CHARS = 50;
