@@ -20,10 +20,12 @@ const AUTH_BG_FILES = [
   "Gemini_Generated_Image_w917iiw917iiw917.png",
 ];
 
+// Returns the full public path for an authentication background image
 function getAuthBackgroundPath(fileName) {
   return `/BGS/${encodeURIComponent(fileName)}`;
 }
 
+// Unified component for user login and signup with Google OAuth support
 export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, isDark }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState(searchParams.get("tab") === "signup" ? "signup" : "login");
@@ -185,10 +187,12 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
     };
   }, [googleConfigured, isDark]);
 
+// Updates a specific field in the signup/login form state
   function updateField(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+// Submits the authentication form to the parent component
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");

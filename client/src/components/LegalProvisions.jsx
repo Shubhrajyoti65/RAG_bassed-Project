@@ -1,9 +1,11 @@
 import { useState } from "react";
 
+// Cleans up whitespace and normalizes text for display
 function normalizeText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
 
+// Generates a shortened version of a long description for better UI fitting
 function getConciseDescription(text, maxLength = 180) {
   const normalized = normalizeText(text);
   if (normalized.length <= maxLength) return normalized;
@@ -12,6 +14,7 @@ function getConciseDescription(text, maxLength = 180) {
   return `${normalized.slice(0, maxLength).trim()}...`;
 }
 
+// Component to display a list of applicable legal sections with expandable details
 export default function LegalProvisions({ provisions }) {
   const [expandedIndex, setExpandedIndex] = useState(null);
 

@@ -1,3 +1,4 @@
+// Component that displays a legal disclaimer regarding the nature of the AI analysis
 export default function Disclaimer() {
   return (
     <div className="rounded-xl px-5 py-3 border border-amber-300/60 bg-amber-50/70 dark:bg-amber-500/8 dark:border-amber-400/30">

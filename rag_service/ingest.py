@@ -8,6 +8,7 @@ except ModuleNotFoundError:
     from rag_pipeline import IngestConfig, build_and_persist_faiss_index
 
 
+# Orchestrates the loading of raw case data and its conversion into a FAISS vector index
 def run_ingestion() -> None:
     print("INGESTION STARTED")
 

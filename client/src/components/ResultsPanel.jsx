@@ -2,11 +2,13 @@ import CaseSummary from "./CaseSummary";
 import LegalProvisions from "./LegalProvisions";
 import SimilarCases from "./SimilarCases";
 
+// Formats the total time taken for analysis into a readable string
 function formatAnalysisTime(ms) {
   if (typeof ms !== "number" || Number.isNaN(ms) || ms < 0) return null;
   return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(2)} s`;
 }
 
+// Container component that holds the full suite of analysis results sections
 export default function ResultsPanel({ result, isDark, analysisTimeMs }) {
   const timeLabel = formatAnalysisTime(analysisTimeMs);
 

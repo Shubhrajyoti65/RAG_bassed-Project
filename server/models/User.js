@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+// Mongoose schema for user profiles and authentication data
 const userSchema = new mongoose.Schema(
   {
     name: {

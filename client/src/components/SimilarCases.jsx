@@ -1,3 +1,4 @@
+// Component that displays a grid of legally similar case precedents
 export default function SimilarCases({ cases }) {
   if (!cases || cases.length === 0) return null;
 

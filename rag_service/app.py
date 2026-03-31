@@ -39,6 +39,7 @@ def enrich_property_query(text: str, category: str) -> str:
 
 
 
+# FastAPI endpoint to perform RAG-based analysis on user-provided case text
 @app.post("/analyze")
 def analyze(payload: AnalyzeRequest):
     text = payload.text.strip()

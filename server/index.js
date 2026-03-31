@@ -31,6 +31,7 @@ app.use("/api", historyRoute);
 
 app.use(errorHandler);
 
+// Function to connect to database and start the Express server
 async function start() {
   await connectMongo();
 

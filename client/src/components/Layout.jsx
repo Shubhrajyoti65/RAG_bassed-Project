@@ -2,6 +2,7 @@ import { useState } from "react";
 import Header from "./Header";
 import { Link } from "react-router-dom";
 
+// Main layout wrapper component that provides the global structure, header, and footer
 export default function Layout({ children, user, onLogout, isDark, onToggleTheme, onNewAnalysis }) {
   const [showDisclaimer, setShowDisclaimer] = useState(false);
 

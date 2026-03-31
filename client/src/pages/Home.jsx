@@ -77,6 +77,7 @@ const CONTACT_POINTS = [
   { title: "Support hours", detail: "Mon to Fri, 9:00 AM to 6:00 PM IST" },
 ];
 
+// Custom hook to trigger a reveal animation when an element enters the viewport
 function useReveal() {
   const ref = useRef(null);
 
@@ -105,6 +106,7 @@ function useReveal() {
   return ref;
 }
 
+// Custom hook for staggered entrance animations of multiple child elements
 function useRevealStagger() {
   const ref = useRef(null);
 
@@ -133,6 +135,7 @@ function useRevealStagger() {
   return ref;
 }
 
+// Custom hook to apply a mouse-tracking parallax tilt effect to the hero visual
 function useHeroParallax() {
   const wrapRef = useRef(null);
   const cardRef = useRef(null);
@@ -194,6 +197,7 @@ function useHeroParallax() {
   return { wrapRef, cardRef };
 }
 
+// Landing page component featuring platform introduction, features, and trust metrics
 export default function Home() {
   const heroRef = useReveal();
   const { wrapRef: heroVisualRef, cardRef: heroCardRef } = useHeroParallax();

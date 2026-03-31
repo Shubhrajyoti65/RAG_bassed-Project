@@ -89,6 +89,7 @@ class QueryConfig:
     top_k: int = DEFAULT_TOP_K
 
 
+# Custom embedding class using SentenceTransformers for high-quality semantic vector generation
 class SentenceTransformerEmbeddingFunction(Embeddings):
     def __init__(self, model_name: str = EMBEDDING_MODEL_NAME):
         self.model = SentenceTransformer(model_name)
@@ -102,13 +103,8 @@ class SentenceTransformerEmbeddingFunction(Embeddings):
         return vector.tolist()
 
 
-
-def build_and_persist_faiss_index(
-    config: IngestConfig,
-    case_category: str = "general"
-) -> tuple[int, int]:
-
-    cases = load_case_records(config.root_dir, case_category)
+def build_and_persist_faiss_index(config: IngestConfig) -> tuple[int, int]:
+    cases = load_case_records(config.root_dir)
     documents = build_documents(cases)
     chunks = chunk_documents(documents)
 
@@ -123,10 +119,7 @@ def build_and_persist_faiss_index(
     return len(cases), len(chunks)
 
 
-
-
-
-def load_case_records(root_dir: Path, case_category: str = "general") -> list[dict]:
+def load_case_records(root_dir: Path) -> list[dict]:
     merged = {}
 
     for item in load_imported_cases(root_dir, case_category):
@@ -150,22 +143,8 @@ def load_case_records(root_dir: Path, case_category: str = "general") -> list[di
     return filtered
 
 
-
-
-
-def load_imported_cases(root_dir: Path, case_category: str = "general") -> list[dict]:
-    """
-    Load cleaned JSON corpus based on selected category.
-
-    property -> propertyCases.json
-    others   -> importedCases.json
-    """
-
-    if case_category.lower() == "property":
-        imported_file = root_dir / "server" / "data" / "propertyCases.json"
-    else:
-        imported_file = root_dir / "server" / "data" / "importedCases.json"
-
+def load_imported_cases(root_dir: Path) -> list[dict]:
+    imported_file = root_dir / "server" / "data" / "importedCases.json"
     if not imported_file.exists():
         return []
 
@@ -180,6 +159,7 @@ def load_imported_cases(root_dir: Path, case_category: str = "general") -> list[
 
 
 
+# Heuristic filter to identify relevant Domestic Violence cases from the Allahabad High Court
 def is_target_case(item: dict) -> bool:
     blob = " ".join(
         [
@@ -200,6 +180,7 @@ def is_target_case(item: dict) -> bool:
     return has_dv_signal and has_court_signal
 
 
+# Converts raw case dictionaries into LangChain Document objects with metadata
 def build_documents(cases: Iterable[dict]) -> list[Document]:
     docs: list[Document] = []
     for item in cases:
@@ -226,6 +207,7 @@ def build_documents(cases: Iterable[dict]) -> list[Document]:
     return docs
 
 
+# Splits large documents into smaller semantic chunks for optimized vector retrieval
 def chunk_documents(documents: list[Document]) -> list[Document]:
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
@@ -235,6 +217,7 @@ def chunk_documents(documents: list[Document]) -> list[Document]:
     return splitter.split_documents(documents)
 
 
+# Main pipeline function: performs retrieval, prompt augmentation, and LLM generation
 def analyze_case_text(case_text: str, config: QueryConfig) -> dict:
     if not case_text or not case_text.strip():
         raise ValueError("case text is required")
@@ -261,6 +244,7 @@ def analyze_case_text(case_text: str, config: QueryConfig) -> dict:
         raise
 
 
+# Loads or retrieves the FAISS index from the local file system
 def load_faiss_index(index_dir: Path) -> FAISS:
     if not index_dir.exists():
         raise FileNotFoundError(
@@ -282,6 +266,7 @@ def load_faiss_index(index_dir: Path) -> FAISS:
     return loaded
 
 
+# Singleton-style accessor for the global embedding model instance
 def get_embedding_function() -> SentenceTransformerEmbeddingFunction:
     global _EMBEDDING_FUNCTION
     if _EMBEDDING_FUNCTION is None:
@@ -289,6 +274,7 @@ def get_embedding_function() -> SentenceTransformerEmbeddingFunction:
     return _EMBEDDING_FUNCTION
 
 
+# Cached accessor for the Google Gemini LLM instance
 def get_llm(config: QueryConfig) -> ChatGoogleGenerativeAI:
     cache_key = (config.generation_model, config.gemini_api_key)
     cached = _LLM_CACHE.get(cache_key)
@@ -304,6 +290,7 @@ def get_llm(config: QueryConfig) -> ChatGoogleGenerativeAI:
     return llm
 
 
+# Aggregates retrieved document contents and metadata into a formatted context string
 def build_retrieved_context(docs: list[Document]) -> str:
     if not docs:
         return "No retrieved cases available."
@@ -328,6 +315,7 @@ def build_retrieved_context(docs: list[Document]) -> str:
     return "\n\n---\n\n".join(blocks)
 
 
+# Extracts a structured JSON object from a raw LLM string response
 def parse_model_json(raw_text: str) -> dict:
     cleaned = raw_text.strip()
     try:
@@ -340,6 +328,7 @@ def parse_model_json(raw_text: str) -> dict:
         raise ValueError("LLM returned invalid JSON")
 
 
+# Ensures the LLM-generated payload contains all required fields and correct formats
 def normalize_analysis_output(payload: dict) -> dict:
     if not isinstance(payload, dict):
         raise ValueError("LLM response must be a JSON object")
@@ -360,6 +349,7 @@ def normalize_analysis_output(payload: dict) -> dict:
     return normalized
 
 
+# Normalizes various similarity score outputs (0.0-1.0 or 0-10) into a 0-100 percentage
 def normalize_similarity_score(value) -> int:
     try:
         score = float(value)
@@ -377,6 +367,7 @@ def normalize_similarity_score(value) -> int:
     return int(round(score))
 
 
+# Determines if a specific error is related to API rate limiting or service unavailability
 def is_quota_or_busy_error(error: Exception) -> bool:
     message = str(error).lower()
     return (
@@ -389,6 +380,7 @@ def is_quota_or_busy_error(error: Exception) -> bool:
     )
 
 
+# Generates a simplified analysis using only retrieved context when the LLM is unavailable
 def build_quota_fallback_analysis(case_text: str, docs: list[Document]) -> dict:
     top_docs = docs[:3]
     legal_provisions = collect_legal_provisions(top_docs)
@@ -429,6 +421,7 @@ def build_quota_fallback_analysis(case_text: str, docs: list[Document]) -> dict:
     }
 
 
+# Creates a best-effort summary based on user input and retrieved precedent titles
 def build_fallback_summary(case_text: str, docs: list[Document]) -> str:
     normalized_input = normalize_whitespace(case_text)
     sentence_parts = [s.strip() for s in normalized_input.split(".") if s.strip()]
@@ -458,6 +451,7 @@ def build_fallback_summary(case_text: str, docs: list[Document]) -> str:
     )
 
 
+# Extracts unique legal provisions from metadata of retrieved document chunks
 def collect_legal_provisions(docs: list[Document]) -> list[dict]:
     provisions: list[dict] = []
     seen: set[str] = set()
@@ -506,10 +500,12 @@ def collect_legal_provisions(docs: list[Document]) -> list[dict]:
     return provisions
 
 
+# Standardizes string whitespace for cleaner display and comparison
 def normalize_whitespace(value: str) -> str:
     return " ".join(str(value or "").split())
 
 
+# Internal utility to read secrets from a server-side .env file if available
 def _read_env_file_value(env_file: Path, key: str) -> str:
     if not env_file.exists():
         return ""
@@ -524,8 +520,7 @@ def _read_env_file_value(env_file: Path, key: str) -> str:
     return ""
 
 
-
-def build_default_query_config(case_category: str = "general") -> QueryConfig:
+def build_default_query_config() -> QueryConfig:
     service_dir = Path(__file__).resolve().parent
     root_dir = service_dir.parent
     server_env_file = root_dir / "server" / ".env"

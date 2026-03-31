@@ -1,11 +1,13 @@
 import { useEffect, useRef } from "react";
 
+// Helper function to format duration in milliseconds to a human-readable string
 function formatDuration(ms) {
   if (typeof ms !== "number" || Number.isNaN(ms)) return "";
   return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(2)} s`;
 }
 
 /** Compact vertical similarity score widget — sits top-right of each case card */
+// Sub-component to display a visual similarity score for case matches
 function SimilarityBar({ score }) {
   const barRef = useRef(null);
 
@@ -48,6 +50,7 @@ function SimilarityBar({ score }) {
   );
 }
 
+// Main component to display the comprehensive analysis results of a legal case
 export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRestart }) {
   const provisions = Array.isArray(result?.legalProvisions) ? result.legalProvisions : [];
   const cases = Array.isArray(result?.similarCases) ? result.similarCases.slice(0, 5) : [];

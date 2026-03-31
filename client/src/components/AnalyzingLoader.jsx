@@ -12,6 +12,7 @@ const STEPS = [
 // Each step holds for ~3s before advancing
 const STEP_DURATION_MS = 3000;
 
+// Component that displays an animated loading sequence with step-by-step progress
 export default function AnalyzingLoader() {
   const [currentStep, setCurrentStep] = useState(0);
   const [visible, setVisible] = useState(true); // for fade transition

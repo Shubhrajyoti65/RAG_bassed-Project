@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+// Static page component providing contact information and support details
 export default function ContactUsPage({ user }) {
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">

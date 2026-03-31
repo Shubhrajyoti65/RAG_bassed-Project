@@ -1,3 +1,4 @@
+// Component to display error messages with an optional dismiss action
 export default function ErrorAlert({ message, onDismiss }) {
   return (
     <div className="rounded-xl p-4 flex items-start gap-3 border border-red-300/60 bg-red-50/80 dark:bg-red-500/10 dark:border-red-400/35">

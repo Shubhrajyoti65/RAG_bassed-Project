@@ -9,6 +9,7 @@ const allowedPdfMimeTypes = new Set([
   "text/pdf",
 ]);
 
+// Configuration for file uploads using Multer, restricted to PDF files
 const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 },

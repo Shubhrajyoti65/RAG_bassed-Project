@@ -1,3 +1,4 @@
+// Component to display a concise summary section for a legal case
 export default function CaseSummary({ summary }) {
   return (
     <div className="bg-surface rounded-xl border border-border overflow-hidden">

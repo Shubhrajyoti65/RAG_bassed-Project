@@ -6,12 +6,14 @@ const User = require("../models/User");
 
 let googleClient;
 
+// Normalizes email address to lowercase and trims whitespace
 function normalizeEmail(email) {
   return String(email || "")
     .trim()
     .toLowerCase();
 }
 
+// Converts internal user model to a public DTO format
 function toPublicUser(user) {
   return {
     id: String(user._id),
@@ -28,6 +30,7 @@ function toPublicUser(user) {
   };
 }
 
+// Validates and normalizes user avatar URL or base64 string
 function normalizeAvatarUrl(value) {
   const safeValue = String(value || "").trim();
   if (!safeValue) {
@@ -61,6 +64,7 @@ function normalizeAvatarUrl(value) {
   return safeValue;
 }
 
+// Validates and normalizes gender values
 function normalizeGender(value) {
   const safeValue = String(value || "")
     .trim()
@@ -76,6 +80,7 @@ function normalizeGender(value) {
   return safeValue;
 }
 
+// Initializes and retrieves the Google OAuth2 client
 function getGoogleClient() {
   if (!googleClient) {
     googleClient = new OAuth2Client(config.GOOGLE_CLIENT_ID);
@@ -83,6 +88,7 @@ function getGoogleClient() {
   return googleClient;
 }
 
+// Handles user registration logic
 async function signup({ name, email, password }) {
   const safeName = String(name || "").trim();
   const safeEmail = normalizeEmail(email);
@@ -117,6 +123,7 @@ async function signup({ name, email, password }) {
   return toPublicUser(user);
 }
 
+// Handles user login logic with email and password
 async function login({ email, password }) {
   const safeEmail = normalizeEmail(email);
   const safePassword = String(password || "");
@@ -147,6 +154,7 @@ async function login({ email, password }) {
   return toPublicUser(user);
 }
 
+// Handles authentication via Google OAuth ID token
 async function authenticateWithGoogle({ idToken }) {
   const safeIdToken = String(idToken || "").trim();
 
@@ -229,6 +237,7 @@ async function authenticateWithGoogle({ idToken }) {
   return toPublicUser(user);
 }
 
+// Issues a JWT token for the given user
 function issueToken(user) {
   return jwt.sign(
     {
@@ -241,15 +250,18 @@ function issueToken(user) {
   );
 }
 
+// Verifies a JWT token's validity
 function verifyToken(token) {
   return jwt.verify(token, config.JWT_SECRET);
 }
 
+// Retrieves a user by their unique identifier
 async function getUserById(userId) {
   const user = await User.findById(userId);
   return user ? toPublicUser(user) : null;
 }
 
+// Updates user profile information
 async function updateProfile(userId, payload = {}) {
   const user = await User.findById(userId);
   if (!user) {

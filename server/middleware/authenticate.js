@@ -1,5 +1,6 @@
 const { verifyToken, getUserById } = require("../services/authService");
 
+// Middleware to verify JWT token and attach user object to the request
 async function authenticate(req, res, next) {
   const authHeader = req.headers.authorization || "";
   if (!authHeader.startsWith("Bearer ")) {

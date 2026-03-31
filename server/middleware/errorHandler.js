@@ -1,3 +1,4 @@
+// Global middleware to handle errors and send appropriate HTTP responses
 function errorHandler(err, req, res, next) {
   console.error("Error:", err.message);
   console.error("Stack:", err.stack);

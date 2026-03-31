@@ -8,12 +8,14 @@ const CATEGORY_OPTIONS = [
   "Dowry",
 ];
 
+// Component for user to input legal case text or upload a PDF for analysis
 export default function AnalyzeInput({ onAnalyze, loading }) {
   const [text, setText] = useState("");
   const [file, setFile] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("Domestic Violence");
   const fileInputRef = useRef(null);
 
+// Validates if the selected file is a PDF and sets it to state
   function processFile(selected) {
     if (!selected) return;
     if (selected.type !== "application/pdf") {
@@ -23,16 +25,19 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
     setFile(selected);
   }
 
+// Handles changes in the file input element
   function handleFileChange(e) {
     processFile(e.target.files?.[0]);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
+// Clears the selected PDF file
   function removeFile() {
     setFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
+// Submits the case text or file for legal analysis
   async function handleSubmit(e) {
     e.preventDefault();
     const trimmed = text.trim();
