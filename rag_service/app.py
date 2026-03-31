@@ -13,6 +13,7 @@ class AnalyzeRequest(BaseModel):
     text: str
 
 
+# FastAPI endpoint to perform RAG-based analysis on user-provided case text
 @app.post("/analyze")
 def analyze(payload: AnalyzeRequest):
     text = payload.text.strip()

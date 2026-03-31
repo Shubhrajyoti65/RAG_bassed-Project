@@ -17,6 +17,7 @@ import { getCurrentUser, googleAuthUser, loginUser, signupUser } from "./api/aut
 const AUTH_STORAGE_KEY = "nyaya_auth";
 const THEME_STORAGE_KEY = "nyaya_theme";
 
+// Root component that handles authentication state, routing, and global theme configuration
 function App() {
   const [token, setToken] = useState("");
   const [user, setUser] = useState(null);
@@ -99,6 +100,7 @@ function App() {
     localStorage.setItem(THEME_STORAGE_KEY, isDark ? "dark" : "light");
   }, [isDark]);
 
+// Saves the authentication token and user data to local storage and application state
   function persistSession(sessionToken, sessionUser) {
     const nextQuoteSeed = Date.now();
     setToken(sessionToken);
@@ -110,6 +112,7 @@ function App() {
     );
   }
 
+// Updates the user data stored in the local storage session
   function updateStoredSession(nextUser, sessionToken = token) {
     if (!sessionToken) {
       return;
@@ -121,11 +124,13 @@ function App() {
     );
   }
 
+// Handles state update when user profile is modified
   function handleUserUpdated(nextUser) {
     setUser(nextUser);
     updateStoredSession(nextUser);
   }
 
+// Clears all session data and logs the user out
   function clearSession() {
     setToken("");
     setUser(null);
@@ -134,6 +139,7 @@ function App() {
     localStorage.removeItem(AUTH_STORAGE_KEY);
   }
 
+// Fetches the analysis history for the current user from the server
   async function loadUserHistory(sessionToken = token) {
     if (!sessionToken) {
       setHistory([]);
@@ -144,6 +150,7 @@ function App() {
     setHistory(list);
   }
 
+// Processes the user login request
   async function handleLogin({ email, password }) {
     setAuthLoading(true);
     try {
@@ -156,6 +163,7 @@ function App() {
     }
   }
 
+// Processes the user registration request
   async function handleSignup({ name, email, password }) {
     setAuthLoading(true);
     try {
@@ -168,6 +176,7 @@ function App() {
     }
   }
 
+// Handles authentication via Google OAuth
   async function handleGoogleAuth(idToken) {
     setAuthLoading(true);
     try {
@@ -180,11 +189,13 @@ function App() {
     }
   }
 
+// Loads a specific history item for detailed viewing in the analysis panel
   function handleHistorySelect(item) {
     loadSavedResult(item.analysis);
     navigate("/analyze");
   }
 
+// Toggles between light and dark visual themes
   function toggleTheme() {
     setIsDark((prev) => !prev);
   }

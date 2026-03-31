@@ -1,9 +1,11 @@
+// Helper function to format ISO date strings into a local readable format
 function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Unknown date";
   return date.toLocaleString();
 }
 
+// Component to display a scrollable list of previously saved case analyses
 export default function HistoryPanel({ history, onSelect }) {
   return (
     <div className="bg-surface rounded-xl border border-border shadow-sm p-5">

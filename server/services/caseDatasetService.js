@@ -8,10 +8,12 @@ const IMPORTED_CASES_PATH = path.join(
   "importedCases.json"
 );
 
+// Main entry point to load the entire case dataset
 function loadCaseDataset() {
   return loadImportedCases();
 }
 
+// Loads legal cases from the imported JSON file
 function loadImportedCases() {
   try {
     if (!fs.existsSync(IMPORTED_CASES_PATH)) {
@@ -43,6 +45,7 @@ function loadImportedCases() {
   }
 }
 
+// Validates that a case object contains all required fields
 function isValidCase(item) {
   if (!item || typeof item !== "object") return false;
 

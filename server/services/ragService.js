@@ -1,6 +1,7 @@
 const PYTHON_RAG_URL =
   process.env.PYTHON_RAG_URL || "http://localhost:8000/analyze";
 
+// Sends case text to the Python RAG service for analysis
 async function analyzeCase(caseText) {
   const text = String(caseText || "").trim();
   if (!text) {
@@ -37,6 +38,7 @@ async function analyzeCase(caseText) {
   return parsed;
 }
 
+// Validates that the LLM analysis response contains all required fields
 function validateAnalysis(analysis) {
   const required = ["summary", "legalProvisions", "similarCases", "disclaimer"];
   for (const field of required) {

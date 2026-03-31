@@ -4,10 +4,12 @@ import { updateCurrentUser } from "../api/authApi";
 
 const MAX_AVATAR_FILE_SIZE = 2 * 1024 * 1024;
 
+// Generates a single-letter label for the profile avatar fallback
 function getAvatarLabel(name) {
   return String(name || "U").trim().charAt(0).toUpperCase() || "U";
 }
 
+// Page component for users to view and update their profile details and avatar
 export default function ProfilePage({ user, token, onUserUpdated }) {
   const [name, setName] = useState(user?.name || "");
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || "");
@@ -22,6 +24,7 @@ export default function ProfilePage({ user, token, onUserUpdated }) {
     setGender(user?.gender || user?.sex || "");
   }, [user]);
 
+// Handles local file reading and validation for user avatar updates
   async function handleAvatarUpload(event) {
     const file = event.target.files?.[0];
     if (!file) {
@@ -52,6 +55,7 @@ export default function ProfilePage({ user, token, onUserUpdated }) {
     reader.readAsDataURL(file);
   }
 
+// Submits refined profile data to the backend API
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");

@@ -35,16 +35,19 @@ const LEGAL_QUOTES = [
   },
 ];
 
+// Formats a date value into a localized human-readable string
 function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Unknown date";
   return date.toLocaleString();
 }
 
+// Extracts the first letter of a name to use as a fallback profile avatar
 function getAvatarLabel(name) {
   return String(name || "U").trim().charAt(0).toUpperCase() || "U";
 }
 
+// Formats a raw gender string into a presentable title-cased version
 function formatGender(value) {
   const safeValue = String(value || "").trim();
   if (!safeValue) {
@@ -57,12 +60,14 @@ function formatGender(value) {
     .join(" ");
 }
 
+// Randomly selects a legal quote from a predefined list based on a seed value
 function pickQuote(quoteSeed) {
   const safeSeed = Number(quoteSeed) || 0;
   const index = Math.abs(safeSeed) % LEGAL_QUOTES.length;
   return LEGAL_QUOTES[index];
 }
 
+// Main dashboard page showcasing user stats, profile summary, and recent activity
 export default function Dashboard({ user, quoteSeed, history = [], onSelect }) {
   const totalCases = history.length;
   const textCases = history.filter((h) => h.inputType === "text").length;

@@ -1,29 +1,37 @@
 import { useState, useRef } from "react";
 
+// Component providing a robust interface for case text entry and PDF drag-and-drop uploads
 export default function InputPanel({ onAnalyze, loading }) {
   const [text, setText] = useState("");
   const [file, setFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
+// Handles synthesis of text or file input for the analysis submission
   function handleSubmit(e) {
     e.preventDefault();
     if (file) onAnalyze({ file });
     else if (text.trim()) onAnalyze({ text: text.trim() });
   }
 
+// Forwards file input change events to the processing function
   function handleFileChange(e) { processFile(e.target.files[0]); }
 
+// Activates dragging state when a file is hovered over the drop zone
   function handleDragOver(e) { e.preventDefault(); if (!loading && !file) setIsDragging(true); }
+// Deactivates dragging state when a file leaves the drop zone
   function handleDragLeave(e) { e.preventDefault(); setIsDragging(false); }
+// Handles file drop events by processing the dropped file
   function handleDrop(e) { e.preventDefault(); setIsDragging(false); if (!loading && !file) processFile(e.dataTransfer.files[0]); }
 
+// Validates the current file selection and updates the component state
   function processFile(selected) {
     if (selected && selected.type === "application/pdf") setFile(selected);
     else if (selected) alert("Please select a valid PDF file.");
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
+// Resets the current file selection and allows for new uploads
   function removeFile() { setFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }
 
   const canSubmit = !loading && (text.trim().length >= 50 || file);

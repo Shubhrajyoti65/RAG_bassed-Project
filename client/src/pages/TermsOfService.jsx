@@ -69,6 +69,7 @@ const termsSections = [
   },
 ];
 
+// Page component displaying the legal terms of service for platform usage
 export default function TermsOfService() {
   return (
     <div className="max-w-4xl mx-auto">

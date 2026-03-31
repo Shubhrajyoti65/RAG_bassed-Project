@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 const ESTIMATED_SECONDS = 45;
 
+// Formats remaining seconds into a MM:SS countdown format
 function formatSeconds(totalSeconds) {
   const safe = Math.max(0, totalSeconds);
   const minutes = Math.floor(safe / 60).toString().padStart(2, "0");
@@ -9,6 +10,7 @@ function formatSeconds(totalSeconds) {
   return `${minutes}:${seconds}`;
 }
 
+// Component displaying a loading spinner with an estimated time countdown
 export default function LoadingSpinner() {
   const [remainingSeconds, setRemainingSeconds] = useState(ESTIMATED_SECONDS);
 

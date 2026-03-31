@@ -1,5 +1,6 @@
 const pdfParse = require("pdf-parse");
 
+// Extracts raw text content from PDF file buffer
 async function extractTextFromPDF(buffer) {
   try {
     const data = await pdfParse(buffer);

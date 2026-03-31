@@ -4,6 +4,7 @@ const { getUserHistory } = require("../services/historyService");
 
 const router = express.Router();
 
+// Route to retrieve the legal analysis history for the authenticated user
 router.get("/history", authenticate, async (req, res, next) => {
   try {
     const history = await getUserHistory(req.user.id);

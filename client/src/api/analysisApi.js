@@ -1,3 +1,4 @@
+// Sends case text or a PDF file to the backend for automated legal analysis
 export async function submitAnalysis({ text, file, token }) {
   let response;
   const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};

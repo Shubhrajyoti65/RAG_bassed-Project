@@ -56,6 +56,7 @@ const policySections = [
   },
 ];
 
+// Page component displaying the platform's privacy policy and data handling practices
 export default function PrivacyPolicy() {
   return (
     <div className="max-w-4xl mx-auto">

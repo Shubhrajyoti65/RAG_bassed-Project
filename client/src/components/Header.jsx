@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
+// Main navigation header component with responsive mobile menu and profile dropdown
 export default function Header({ user, onLogout, isDark, onToggleTheme, onNewAnalysis }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -104,6 +105,7 @@ export default function Header({ user, onLogout, isDark, onToggleTheme, onNewAna
 
   const primaryNavLinks = user ? userCoreNavLinks : guestPrimaryNavLinks;
 
+// Handles navigation clicks, including smooth scrolling for anchor links and reset for new analysis
   function handleNavClick(e, to) {
     // Always reset analysis state when navigating to /analyze
     if (to === "/analyze") {

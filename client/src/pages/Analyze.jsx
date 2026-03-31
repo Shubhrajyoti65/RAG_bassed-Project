@@ -4,10 +4,12 @@ import AnalyzingLoader from "../components/AnalyzingLoader";
 import ErrorAlert from "../components/ErrorAlert";
 import { useEffect, useMemo, useState } from "react";
 
+// Page component for managing the legal case analysis workflow
 export default function Analyze({ token, loadUserHistory, result, loading, error, analysisTimeMs, analyze, reset }) {
   const [userInput, setUserInput] = useState(null);
   const analysisResult = useMemo(() => result || null, [result]);
 
+// Triggers the analysis process and refreshes user history upon success
   async function handleAnalyze(payload) {
     setUserInput(payload);
     const outcome = await analyze({ ...payload, token });
@@ -16,6 +18,7 @@ export default function Analyze({ token, loadUserHistory, result, loading, error
     }
   }
 
+// Resets the analysis state to allow starting a new case
   function handleRestart() {
     setUserInput(null);
     reset();

@@ -1,3 +1,4 @@
+// Registers a new user with name, email, and password
 export async function signupUser({ name, email, password }) {
   const response = await fetch("/api/auth/signup", {
     method: "POST",
@@ -13,6 +14,7 @@ export async function signupUser({ name, email, password }) {
   return payload;
 }
 
+// Authenticates an existing user and returns a session token
 export async function loginUser({ email, password }) {
   const response = await fetch("/api/auth/login", {
     method: "POST",
@@ -28,6 +30,7 @@ export async function loginUser({ email, password }) {
   return payload;
 }
 
+// Authenticates a user via a Google OAuth ID token
 export async function googleAuthUser({ idToken }) {
   const response = await fetch("/api/auth/google", {
     method: "POST",
@@ -45,6 +48,7 @@ export async function googleAuthUser({ idToken }) {
   return payload;
 }
 
+// Retrieves the logged-in user's profile information using a valid token
 export async function getCurrentUser(token) {
   const response = await fetch("/api/auth/me", {
     headers: { Authorization: `Bearer ${token}` },
@@ -58,6 +62,7 @@ export async function getCurrentUser(token) {
   return payload.user;
 }
 
+// Updates the current user's profile details including name, avatar, and gender
 export async function updateCurrentUser(token, { name, avatarUrl, gender }) {
   const response = await fetch("/api/auth/me", {
     method: "PATCH",

@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { useMemo, useState } from "react";
 
+// Helper for formatting date-time values into localized strings
 function formatDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Unknown date";
   return date.toLocaleString();
 }
 
+// Page component that allows users to search and browse their entire analysis history
 export default function HistoryPage({ history = [], onSelect }) {
   const [query, setQuery] = useState("");
 

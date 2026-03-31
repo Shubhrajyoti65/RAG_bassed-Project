@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { submitAnalysis } from "../api/analysisApi";
 
+// Custom hook to manage the state and execution of case analysis requests
 export function useAnalysis() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [analysisTimeMs, setAnalysisTimeMs] = useState(null);
 
+// Executes the analysis by calling the API and tracking performance/loading states
   async function analyze({ text, file, token }) {
     const startedAt = performance.now();
     setLoading(true);
@@ -27,12 +29,14 @@ export function useAnalysis() {
     }
   }
 
+// Resets the analysis state to its initial blank values
   function reset() {
     setResult(null);
     setError(null);
     setAnalysisTimeMs(null);
   }
 
+// Loads a previously saved analysis result into the active state
   function loadSavedResult(savedResult) {
     setResult(savedResult || null);
     setError(null);
