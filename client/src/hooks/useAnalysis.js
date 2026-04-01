@@ -8,8 +8,13 @@ export function useAnalysis() {
   const [error, setError] = useState(null);
   const [analysisTimeMs, setAnalysisTimeMs] = useState(null);
 
+<<<<<<< HEAD
   // Executes the analysis by calling the API and tracking performance/loading states
   async function analyze({ text, file, category, language, token }) {
+=======
+// Executes the analysis by calling the API and tracking performance/loading states
+  async function analyze({ text, file, token }) {
+>>>>>>> dev
     const startedAt = performance.now();
     setLoading(true);
     setError(null);

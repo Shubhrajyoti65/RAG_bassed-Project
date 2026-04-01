@@ -89,6 +89,10 @@ class QueryConfig:
     top_k: int = DEFAULT_TOP_K
     output_language: str = "English"
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> dev
 # Custom embedding class using SentenceTransformers for high-quality semantic vector generation
 class SentenceTransformerEmbeddingFunction(Embeddings):
     def __init__(self, model_name: str = EMBEDDING_MODEL_NAME):
@@ -103,8 +107,14 @@ class SentenceTransformerEmbeddingFunction(Embeddings):
         return vector.tolist()
 
 
+<<<<<<< HEAD
 def build_and_persist_faiss_index(config: IngestConfig, case_category: str) -> tuple[int, int]:
     cases = load_case_records(config.root_dir, case_category)
+=======
+# Loads records, builds documents, chunks them, and persists the FAISS index to disk
+def build_and_persist_faiss_index(config: IngestConfig) -> tuple[int, int]:
+    cases = load_case_records(config.root_dir)
+>>>>>>> dev
     documents = build_documents(cases)
     chunks = chunk_documents(documents)
 
@@ -119,7 +129,12 @@ def build_and_persist_faiss_index(config: IngestConfig, case_category: str) -> t
     return len(cases), len(chunks)
 
 
+<<<<<<< HEAD
 def load_case_records(root_dir: Path, case_category: str) -> list[dict]:
+=======
+# Retrieves and filters case records from the imported JSON dataset
+def load_case_records(root_dir: Path) -> list[dict]:
+>>>>>>> dev
     merged = {}
 
     for item in load_imported_cases(root_dir):
@@ -143,6 +158,7 @@ def load_case_records(root_dir: Path, case_category: str) -> list[dict]:
     return filtered
 
 
+# Directly reads the raw JSON case data from the server storage directory
 def load_imported_cases(root_dir: Path) -> list[dict]:
     imported_file = root_dir / "server" / "data" / "importedCases.json"
     if not imported_file.exists():
@@ -156,9 +172,12 @@ def load_imported_cases(root_dir: Path) -> list[dict]:
     return parsed if isinstance(parsed, list) else []
 
 
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> dev
 # Heuristic filter to identify relevant Domestic Violence cases from the Allahabad High Court
 def is_target_case(item: dict) -> bool:
     blob = " ".join(
@@ -217,6 +236,7 @@ def chunk_documents(documents: list[Document]) -> list[Document]:
     return splitter.split_documents(documents)
 
 
+<<<<<<< HEAD
 def translate_text(text: str, target_lang: str, config: QueryConfig) -> str:
     llm = get_llm(config)
     prompt = ChatPromptTemplate.from_template("Translate the following text into {target_lang}. Return ONLY the translation, nothing else.\n\nText:\n{text}")
@@ -251,6 +271,8 @@ def translate_json(data: dict, target_lang: str, config: QueryConfig) -> dict:
         fallback["summary"] = f"[Translation Unavailable: {clean_error}]\n\n{fallback.get('summary', '')}"
         return fallback
 
+=======
+>>>>>>> dev
 # Main pipeline function: performs retrieval, prompt augmentation, and LLM generation
 def analyze_case_text(case_text: str, config: QueryConfig) -> dict:
     if not case_text or not case_text.strip():
@@ -586,7 +608,12 @@ def _read_env_file_value(env_file: Path, key: str) -> str:
     return ""
 
 
+<<<<<<< HEAD
 def build_default_query_config(case_category: str = "general") -> QueryConfig:
+=======
+# Resolves the default runtime configuration by checking environment variables and .env files
+def build_default_query_config() -> QueryConfig:
+>>>>>>> dev
     service_dir = Path(__file__).resolve().parent
     root_dir = service_dir.parent
     server_env_file = root_dir / "server" / ".env"

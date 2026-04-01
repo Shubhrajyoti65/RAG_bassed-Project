@@ -2,7 +2,11 @@ const PYTHON_RAG_URL =
   process.env.PYTHON_RAG_URL || "http://localhost:8000/analyze";
 
 // Sends case text to the Python RAG service for analysis
+<<<<<<< HEAD
 async function analyzeCase(caseText, category = "general", language = "English") {
+=======
+async function analyzeCase(caseText) {
+>>>>>>> dev
   const text = String(caseText || "").trim();
   if (!text) {
     throw new Error("Case text is required");
