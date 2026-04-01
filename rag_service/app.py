@@ -12,6 +12,7 @@ app = FastAPI(title="Nyaay Sahayak RAG Service")
 class AnalyzeRequest(BaseModel):
     text: str
     category: str = "general"
+    language: str = "English"
 
 
 
@@ -59,6 +60,10 @@ def analyze(payload: AnalyzeRequest):
     try:
         config = build_default_query_config(payload.category)
         text = enrich_property_query(text, payload.category)
+        
+        # Pass the desired output language to the pipeline
+        config.output_language = payload.language
+        
         result = analyze_case_text(text, config)
     except FileNotFoundError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error

@@ -64,9 +64,9 @@ Generate a JSON response strictly adhering to the following structure:
             "caseTitle": "...",
             "year": 2020,
             "caseNumber": "...",
-            "similarityScore": "Integer from 0 to 100 (percentage match)",
+            "similarityScore": "Integer from 0 to 100",
             "keyParallels": "...",
-            "decision": "..."
+            "decision": "Brief 1-2 sentence summary of the court's final decision. Do not copy the long text."
         }}
     ],
     "disclaimer": "Standard disclaimer stating this is AI-generated research, not legal advice."
@@ -81,13 +81,13 @@ class IngestConfig:
     index_dir: Path
 
 
-@dataclass(frozen=True)
+@dataclass
 class QueryConfig:
     index_dir: Path
     gemini_api_key: str
     generation_model: str = GENERATION_MODEL_NAME
     top_k: int = DEFAULT_TOP_K
-
+    output_language: str = "English"
 
 # Custom embedding class using SentenceTransformers for high-quality semantic vector generation
 class SentenceTransformerEmbeddingFunction(Embeddings):
@@ -103,8 +103,8 @@ class SentenceTransformerEmbeddingFunction(Embeddings):
         return vector.tolist()
 
 
-def build_and_persist_faiss_index(config: IngestConfig) -> tuple[int, int]:
-    cases = load_case_records(config.root_dir)
+def build_and_persist_faiss_index(config: IngestConfig, case_category: str) -> tuple[int, int]:
+    cases = load_case_records(config.root_dir, case_category)
     documents = build_documents(cases)
     chunks = chunk_documents(documents)
 
@@ -119,10 +119,10 @@ def build_and_persist_faiss_index(config: IngestConfig) -> tuple[int, int]:
     return len(cases), len(chunks)
 
 
-def load_case_records(root_dir: Path) -> list[dict]:
+def load_case_records(root_dir: Path, case_category: str) -> list[dict]:
     merged = {}
 
-    for item in load_imported_cases(root_dir, case_category):
+    for item in load_imported_cases(root_dir):
         case_number = str(item.get("caseNumber", "")).strip()
 
         # fallback to title if case number missing
@@ -217,14 +217,58 @@ def chunk_documents(documents: list[Document]) -> list[Document]:
     return splitter.split_documents(documents)
 
 
+def translate_text(text: str, target_lang: str, config: QueryConfig) -> str:
+    llm = get_llm(config)
+    prompt = ChatPromptTemplate.from_template("Translate the following text into {target_lang}. Return ONLY the translation, nothing else.\n\nText:\n{text}")
+    try:
+        resp = llm.invoke(prompt.format_messages(target_lang=target_lang, text=text))
+        return str(resp.content).strip()
+    except Exception as e:
+        print(f"Pre-translation failed: {e}")
+        return text
+
+def translate_json(data: dict, target_lang: str, config: QueryConfig) -> dict:
+    llm = get_llm(config)
+    prompt = ChatPromptTemplate.from_template(
+        "You are an expert legal translator. Your task is to translate the text content of the provided JSON object into {target_lang}.\n"
+        "RULES:\n"
+        "1. DO NOT translate any JSON keys (e.g., 'summary', 'legalProvisions'). Keep them exactly as they are in English.\n"
+        "2. Translate all string values (the content) into {target_lang} accurately.\n"
+        "3. Output ONLY the translated JSON object. No explanations, no markdown blocks.\n\n"
+        "JSON to translate:\n{json_data}"
+    )
+    try:
+        resp = llm.invoke(prompt.format_messages(target_lang=target_lang, json_data=json.dumps(data, ensure_ascii=False)))
+        return parse_model_json(str(resp.content))
+    except Exception as e:
+        print(f"Post-translation failed: {e}")
+        error_str = str(e)
+        clean_error = "Translation AI encountered an error."
+        if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str or "quota" in error_str.lower():
+            clean_error = "API Rate Limit Exceeded. Please wait 1 minute before translating again."
+        
+        fallback = dict(data)
+        fallback["summary"] = f"[Translation Unavailable: {clean_error}]\n\n{fallback.get('summary', '')}"
+        return fallback
+
 # Main pipeline function: performs retrieval, prompt augmentation, and LLM generation
 def analyze_case_text(case_text: str, config: QueryConfig) -> dict:
     if not case_text or not case_text.strip():
         raise ValueError("case text is required")
 
+    search_text = case_text.strip()
+    
+    # Auto-detect Hindi if the text contains Devanagari characters but the user left the dropdown on English
+    if config.output_language and config.output_language.lower() == "english":
+        if any("\u0900" <= char <= "\u097F" for char in search_text):
+            config.output_language = "Hindi"
+
+    if config.output_language and config.output_language.lower() != "english":
+        search_text = translate_text(search_text, "English", config)
+
     vector_store = load_faiss_index(config.index_dir)
     retriever = vector_store.as_retriever(search_kwargs={"k": config.top_k})
-    retrieved_docs = retriever.invoke(case_text)
+    retrieved_docs = retriever.invoke(search_text)
     context = build_retrieved_context(retrieved_docs)
 
     llm = get_llm(config)
@@ -232,15 +276,31 @@ def analyze_case_text(case_text: str, config: QueryConfig) -> dict:
     try:
         response = llm.invoke(
             PROMPT_TEMPLATE.format_messages(
-                user_case=case_text.strip(),
+                user_case=search_text,
                 retrieved_context=context,
             )
         )
         parsed = parse_model_json(str(response.content))
-        return normalize_analysis_output(parsed)
+        normalized = normalize_analysis_output(parsed)
+        
+        if config.output_language and config.output_language.lower() != "english":
+            try:
+                translated = translate_json(normalized, config.output_language, config)
+                return {"english": normalized, "translated": translated}
+            except Exception:
+                return {"english": normalized}
+
+        return {"english": normalized}
     except Exception as error:
         if is_quota_or_busy_error(error):
-            return build_quota_fallback_analysis(case_text, retrieved_docs)
+            fb = build_quota_fallback_analysis(search_text, retrieved_docs)
+            if config.output_language and config.output_language.lower() != "english":
+                try:
+                    translated = translate_json(fb, config.output_language, config)
+                    return {"english": fb, "translated": translated}
+                except Exception:
+                    pass
+            return {"english": fb}
         raise
 
 
@@ -393,6 +453,12 @@ def build_quota_fallback_analysis(case_text: str, docs: list[Document]) -> dict:
         if len(snippet) > 220:
             snippet = f"{snippet[:217]}..."
 
+        raw_decision = normalize_whitespace(str(metadata.get("decision", "Decision details not available.")))
+        if len(raw_decision) > 150:
+            short_decision = f"{raw_decision[:147]}..."
+        else:
+            short_decision = raw_decision
+
         similar_cases.append(
             {
                 "caseTitle": metadata.get("caseTitle", "Relevant Retrieved Case"),
@@ -403,7 +469,7 @@ def build_quota_fallback_analysis(case_text: str, docs: list[Document]) -> dict:
                     "This result was retrieved from similar High Court domestic violence "
                     f"materials. Context snapshot: {snippet}"
                 ),
-                "decision": metadata.get("decision", "Decision details not available."),
+                "decision": short_decision,
             }
         )
 
@@ -520,7 +586,7 @@ def _read_env_file_value(env_file: Path, key: str) -> str:
     return ""
 
 
-def build_default_query_config() -> QueryConfig:
+def build_default_query_config(case_category: str = "general") -> QueryConfig:
     service_dir = Path(__file__).resolve().parent
     root_dir = service_dir.parent
     server_env_file = root_dir / "server" / ".env"

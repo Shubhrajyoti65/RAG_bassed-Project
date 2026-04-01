@@ -13,6 +13,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
   const [text, setText] = useState("");
   const [file, setFile] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("Domestic Violence");
+  const [selectedLanguage, setSelectedLanguage] = useState("English");
   const fileInputRef = useRef(null);
 
 // Validates if the selected file is a PDF and sets it to state
@@ -47,7 +48,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
     }
 
     if (file) {
-      await onAnalyze({ file, category: selectedCategory });
+      await onAnalyze({ file, category: selectedCategory, language: selectedLanguage });
       return;
     }
 
@@ -55,7 +56,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
       ? `[Category: ${selectedCategory}]\n${trimmed}`
       : trimmed;
 
-    await onAnalyze({ text: payloadText, category: selectedCategory });
+    await onAnalyze({ text: payloadText, category: selectedCategory, language: selectedLanguage });
   }
 
   const MIN_CHARS = 50;
@@ -82,11 +83,41 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
         <h2 className="font-headline text-2xl font-semibold text-text-primary">Start your consultation</h2>
       </div>
 
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        <div className="w-full sm:w-1/3">
+          <label className="block text-xs font-label font-bold text-text-secondary uppercase tracking-wider mb-2">
+            Language
+          </label>
+          <select
+            value={selectedLanguage}
+            onChange={(e) => setSelectedLanguage(e.target.value)}
+            disabled={loading}
+            className="w-full app-input ui-border-highlight px-4 py-2 text-sm text-text-primary bg-surface/80 shadow-sm appearance-none outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
+          >
+            <option value="English">English</option>
+            <option value="Hindi">Hindi (हिंदी)</option>
+            <option value="Marathi">Marathi (मराठी)</option>
+            <option value="Bengali">Bengali (বাংলা)</option>
+            <option value="Tamil">Tamil (தமிழ்)</option>
+            <option value="Telugu">Telugu (తెలుగు)</option>
+            <option value="Gujarati">Gujarati (ગુજરાતી)</option>
+            <option value="Kannada">Kannada (ಕನ್ನಡ)</option>
+            <option value="Malayalam">Malayalam (മലയാളം)</option>
+            <option value="Odia">Odia (ଓଡ଼ିଆ)</option>
+            <option value="Punjabi">Punjabi (ਪੰਜਾਬੀ)</option>
+            <option value="Assamese">Assamese (অসমীয়া)</option>
+            <option value="Urdu">Urdu (اردو)</option>
+          </select>
+        </div>
+      </div>
+
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
         disabled={loading || Boolean(file)}
-        placeholder="Explain your situation here. Use your own words..."
+        placeholder={selectedLanguage === "English" 
+            ? "Explain your situation here. Use your own words..."
+            : `Explain your situation here. You may write in ${selectedLanguage.split(" ")[0]}...`}
         className={`w-full h-40 app-input ui-border-highlight px-4 py-3 text-base leading-relaxed transition-all duration-200 ${!file && charCount > 0 && !meetsMinimum ? 'border-amber-400/60 focus:border-amber-400' : ''}`}
       />
 
