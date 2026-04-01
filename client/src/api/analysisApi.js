@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-export async function submitAnalysis({ text, file, category, token }) {
-=======
 // Sends case text or a PDF file to the backend for automated legal analysis
-export async function submitAnalysis({ text, file, token }) {
->>>>>>> 2e202d63773fc13c296e892ea7239941b089be3d
+export async function submitAnalysis({ text, file, category, language, token }) {
   let response;
   const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 
@@ -12,6 +8,9 @@ export async function submitAnalysis({ text, file, token }) {
     formData.append("file", file);
     if (category) {
       formData.append("category", category);
+    }
+    if (language) {
+      formData.append("language", language);
     }
     response = await fetch("/api/analyze", {
       method: "POST",
@@ -22,7 +21,7 @@ export async function submitAnalysis({ text, file, token }) {
     response = await fetch("/api/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders },
-      body: JSON.stringify({ text, category }),
+      body: JSON.stringify({ text, category, language }),
     });
   }
 

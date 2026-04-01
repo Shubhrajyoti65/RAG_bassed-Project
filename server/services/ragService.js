@@ -1,12 +1,8 @@
 const PYTHON_RAG_URL =
   process.env.PYTHON_RAG_URL || "http://localhost:8000/analyze";
 
-<<<<<<< HEAD
-async function analyzeCase(caseText, category = "general") {
-=======
 // Sends case text to the Python RAG service for analysis
-async function analyzeCase(caseText) {
->>>>>>> 2e202d63773fc13c296e892ea7239941b089be3d
+async function analyzeCase(caseText, category = "general", language = "English") {
   const text = String(caseText || "").trim();
   if (!text) {
     throw new Error("Case text is required");
@@ -17,7 +13,7 @@ async function analyzeCase(caseText) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ text, category }),
+    body: JSON.stringify({ text, category, language }),
   });
 
   const raw = await response.text();
@@ -44,16 +40,17 @@ async function analyzeCase(caseText) {
 
 // Validates that the LLM analysis response contains all required fields
 function validateAnalysis(analysis) {
+  const data = analysis.english || analysis;
   const required = ["summary", "legalProvisions", "similarCases", "disclaimer"];
   for (const field of required) {
-    if (!analysis[field]) {
+    if (!data[field]) {
       throw new Error(`Invalid LLM response: missing field "${field}"`);
     }
   }
-  if (!Array.isArray(analysis.legalProvisions)) {
+  if (!Array.isArray(data.legalProvisions)) {
     throw new Error("legalProvisions must be an array");
   }
-  if (!Array.isArray(analysis.similarCases)) {
+  if (!Array.isArray(data.similarCases)) {
     throw new Error("similarCases must be an array");
   }
 }

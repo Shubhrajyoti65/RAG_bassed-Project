@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Helper function to format duration in milliseconds to a human-readable string
 function formatDuration(ms) {
@@ -52,9 +52,13 @@ function SimilarityBar({ score }) {
 
 // Main component to display the comprehensive analysis results of a legal case
 export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRestart }) {
-  const provisions = Array.isArray(result?.legalProvisions) ? result.legalProvisions : [];
-  const cases = Array.isArray(result?.similarCases) ? result.similarCases.slice(0, 5) : [];
-  const summary = String(result?.summary || "").trim();
+  const hasTranslation = Boolean(result?.translated);
+  const [activeTab, setActiveTab] = useState(hasTranslation ? "translated" : "english");
+  const displayResult = hasTranslation && activeTab === "translated" ? result.translated : (result?.english || result);
+
+  const provisions = Array.isArray(displayResult?.legalProvisions) ? displayResult.legalProvisions : [];
+  const cases = Array.isArray(displayResult?.similarCases) ? displayResult.similarCases.slice(0, 5) : [];
+  const summary = String(displayResult?.summary || "").trim();
   const duration = formatDuration(analysisTimeMs);
 
   const isFileInput = userInput?.file instanceof File;
@@ -118,6 +122,32 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
             </div>
           </div>
         </section>
+      )}
+
+      {/* ── Language Tabs ── */}
+      {hasTranslation && (
+        <div className="flex items-center gap-2 mt-4 px-2 border-b border-border">
+          <button
+            onClick={() => setActiveTab("translated")}
+            className={`px-4 py-2 font-label text-sm font-semibold transition-colors duration-200 border-b-2 ${
+              activeTab === "translated"
+                ? "border-primary text-primary"
+                : "border-transparent text-text-secondary hover:text-text-primary"
+            }`}
+          >
+            Translated Analysis
+          </button>
+          <button
+            onClick={() => setActiveTab("english")}
+            className={`px-4 py-2 font-label text-sm font-semibold transition-colors duration-200 border-b-2 ${
+              activeTab === "english"
+                ? "border-primary text-primary"
+                : "border-transparent text-text-secondary hover:text-text-primary"
+            }`}
+          >
+            English Original
+          </button>
+        </div>
       )}
 
       {/* ── 2. Case Summary ── */}
@@ -234,9 +264,9 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
       )}
 
       {/* ── Disclaimer ── */}
-      {result?.disclaimer && (
+      {displayResult?.disclaimer && (
         <p className="font-label text-xs leading-relaxed text-text-secondary px-1 pb-2">
-          {result.disclaimer}
+          {displayResult.disclaimer}
         </p>
       )}
     </div>

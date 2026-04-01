@@ -42,8 +42,12 @@ router.post(
         });
       }
 
-      const category = (req.body?.category || "general").toLowerCase();
-      const analysis = await analyzeCase(caseText, category);
+      let category = (req.body?.category || "general").toLowerCase();
+      if (category !== "property") {
+        category = "general"; // All non-property cases share the general DV/mixed index
+      }
+      const language = req.body?.language || "English";
+      const analysis = await analyzeCase(caseText, category, language);
       try {
         await saveHistory({
           userId: req.user.id,
