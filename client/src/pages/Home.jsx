@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useRef } from "react";
+import JudgmentTicker from "../components/JudgmentTicker";
 
 const FEATURES = [
   {
@@ -266,6 +267,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <JudgmentTicker />
 
       <section id="features" className="space-y-7">
         <div>

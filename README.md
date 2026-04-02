@@ -76,6 +76,9 @@ From project root:
 ```bash
 .venv\Scripts\python.exe -m pip install -r rag_service/requirements.txt
 ```
+```bash for mac
+.venv\Scripts\python.exe -m pip install -r rag_service/requirements.txt
+```
 
 If .venv does not exist, create it first and then install.
 
@@ -110,8 +113,7 @@ Start Python RAG API first, then Node, then client.
 
 ```cmd
 for /f "tokens=1,* delims==" %A in ('findstr /B /C:"GEMINI_API_KEY=" server\.env') do set GEMINI_API_KEY=%B &&
-".venv\Scripts\python.exe -m uvicorn rag_service.app:app --host 127.0.0.1 --port 8000"
-```
+zaA 
 
 ### 6.2 Start Node API
 

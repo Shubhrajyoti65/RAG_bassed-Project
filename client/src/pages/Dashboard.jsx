@@ -127,8 +127,8 @@ export default function Dashboard({ user, quoteSeed, history = [], onSelect }) {
             <h1 className="mt-2 font-headline text-3xl sm:text-4xl font-bold text-text-primary">
               Welcome back, {firstName}
             </h1>
-
-            <div className="mt-5 rounded-2xl ui-panel-box p-4 sm:p-5 flex-1">
+{/* ticker */}
+            <div className="mt-5 rounded-2xl ui-panel-box p-4 sm:p-5 flex-1 min-h-[120px]">
               <blockquote className="mt-2 font-body text-text-primary text-base leading-relaxed">
                 "{quoteOfSession.quote}"
               </blockquote>

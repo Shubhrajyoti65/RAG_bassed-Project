@@ -10,6 +10,7 @@ import ProfilePage from "./pages/ProfilePage";
 import ContactUsPage from "./pages/ContactUsPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import JudgmentDetailPage from "./pages/JudgmentDetailPage";
 import { useAnalysis } from "./hooks/useAnalysis";
 import { fetchHistory } from "./api/historyApi";
 import { getCurrentUser, googleAuthUser, loginUser, signupUser } from "./api/authApi";
@@ -250,6 +251,7 @@ function App() {
           <Route path="/contact-us" element={<ContactUsPage user={user} />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/judgment/:id" element={<JudgmentDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     </Layout>
