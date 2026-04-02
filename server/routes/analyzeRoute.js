@@ -3,6 +3,7 @@ const router = express.Router();
 const upload = require("../middleware/upload");
 const { extractTextFromPDF } = require("../services/pdfService");
 const { analyzeCase } = require("../services/ragService");
+const { detectCategory } = require("../services/categoryService");
 const authenticate = require("../middleware/authenticate");
 const { saveHistory } = require("../services/historyService");
 
@@ -42,12 +43,21 @@ router.post(
         });
       }
 
-      let category = (req.body?.category || "general").toLowerCase();
-      if (category !== "property") {
-        category = "general"; // All non-property cases share the general DV/mixed index
+      const userProvidedCategory = String(req.body?.category || "").trim();
+      const shouldAutoDetect =
+        !userProvidedCategory ||
+        userProvidedCategory.toLowerCase() === "not sure";
+
+      const resolvedCategory = shouldAutoDetect
+        ? detectCategory(caseText)
+        : userProvidedCategory;
+
+      let ragCategory = resolvedCategory.toLowerCase();
+      if (ragCategory !== "property") {
+        ragCategory = "general"; // All non-property cases share the general DV/mixed index
       }
       const language = req.body?.language || "English";
-      const analysis = await analyzeCase(caseText, category, language);
+      const analysis = await analyzeCase(caseText, ragCategory, language);
       try {
         await saveHistory({
           userId: req.user.id,

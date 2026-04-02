@@ -3,11 +3,35 @@ import Keyboard from "react-simple-keyboard";
 import "react-simple-keyboard/build/css/index.css";
 import { getKeyboardLayout } from "./keyboardLayouts";
 const CATEGORY_OPTIONS = [
+  "Not Sure",
   "Property",
   "Domestic Violence",
   "Maintenance",
   "Custody",
   "Dowry",
+];
+
+const SUGGESTION_RULES = [
+  {
+    category: "Domestic Violence",
+    keywords: ["abuse", "violence", "hit", "assault", "harassment", "cruelty"],
+  },
+  {
+    category: "Maintenance",
+    keywords: ["money", "financial support", "maintenance", "alimony", "expense"],
+  },
+  {
+    category: "Custody",
+    keywords: ["child", "custody", "guardian", "visitation", "minor"],
+  },
+  {
+    category: "Property",
+    keywords: ["property", "land", "house", "plot", "ownership"],
+  },
+  {
+    category: "Dowry",
+    keywords: ["dowry", "gift demand", "bride", "in-laws"],
+  },
 ];
 
 // Safely extract the component in case Vite wraps it in a default object
@@ -17,7 +41,7 @@ const VirtualKeyboard = Keyboard.default || Keyboard;
 export default function AnalyzeInput({ onAnalyze, loading }) {
   const [text, setText] = useState("");
   const [file, setFile] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState("Domestic Violence");
+  const [selectedCategory, setSelectedCategory] = useState("Not Sure");
   const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [layoutName, setLayoutName] = useState("default");
@@ -45,6 +69,27 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
       setShowKeyboard(true); // Auto-show for other languages
     }
   }, [file, selectedLanguage]);
+
+  function getSuggestedCategories(inputText) {
+    const normalized = String(inputText || "").toLowerCase();
+    if (!normalized.trim()) {
+      return [];
+    }
+
+    const matches = SUGGESTION_RULES
+      .map(({ category, keywords }) => ({
+        category,
+        score: keywords.reduce(
+          (count, keyword) => count + (normalized.includes(keyword) ? 1 : 0),
+          0
+        ),
+      }))
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map((item) => item.category);
+
+    return matches.slice(0, 3);
+  }
 
 // Validates if the selected file is a PDF and sets it to state
   function processFile(selected) {
@@ -77,22 +122,26 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
       return;
     }
 
+    const categoryToSend =
+      selectedCategory && selectedCategory !== "Not Sure" ? selectedCategory : undefined;
+
     if (file) {
-      await onAnalyze({ file, category: selectedCategory, language: selectedLanguage });
+      await onAnalyze({ file, category: categoryToSend, language: selectedLanguage });
       return;
     }
 
-    const payloadText = selectedCategory
-      ? `[Category: ${selectedCategory}]\n${trimmed}`
+    const payloadText = categoryToSend
+      ? `[Category: ${categoryToSend}]\n${trimmed}`
       : trimmed;
 
-    await onAnalyze({ text: payloadText, category: selectedCategory, language: selectedLanguage });
+    await onAnalyze({ text: payloadText, category: categoryToSend, language: selectedLanguage });
   }
 
   const MIN_CHARS = 50;
   const charCount = text.trim().length;
   const meetsMinimum = charCount >= MIN_CHARS;
   const canSubmit = !loading && (Boolean(file) || meetsMinimum);
+  const suggestedCategories = !file ? getSuggestedCategories(text) : [];
 
   return (
     <form
@@ -250,6 +299,26 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
           );
         })}
       </div>
+
+      <p className="mt-2 px-1 text-xs text-text-secondary">
+        Not sure? We&apos;ll analyze it for you.
+      </p>
+
+      {!file && suggestedCategories.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="text-xs text-text-secondary">Suggested categories:</span>
+          {suggestedCategories.map((suggested) => (
+            <button
+              key={`suggested-${suggested}`}
+              type="button"
+              onClick={() => setSelectedCategory(suggested)}
+              className="px-3 py-1 rounded-full text-xs font-medium border border-primary/30 text-primary bg-primary/10 hover:bg-primary/15 transition"
+            >
+              {suggested}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
