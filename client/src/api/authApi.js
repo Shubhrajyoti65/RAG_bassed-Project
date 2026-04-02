@@ -48,6 +48,42 @@ export async function googleAuthUser({ idToken }) {
   return payload;
 }
 
+// Requests a password reset OTP for an existing account email
+export async function requestPasswordReset({ email }) {
+  const response = await fetch("/api/auth/forgot-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(
+      payload.error || `Password reset OTP request failed (${response.status})`
+    );
+  }
+
+  return payload;
+}
+
+// Resets account password using a valid reset OTP
+export async function resetPasswordWithToken({ token, newPassword }) {
+  const response = await fetch("/api/auth/reset-password", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ otp: token, newPassword }),
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(
+      payload.error || `Password reset failed (${response.status})`
+    );
+  }
+
+  return payload;
+}
+
 // Retrieves the logged-in user's profile information using a valid token
 export async function getCurrentUser(token) {
   const response = await fetch("/api/auth/me", {

@@ -41,6 +41,15 @@ const userSchema = new mongoose.Schema(
       enum: ["", "male", "female", "other", "prefer_not_to_say"],
       default: "",
     },
+    passwordResetTokenHash: {
+      type: String,
+      default: null,
+      index: true,
+    },
+    passwordResetExpiresAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

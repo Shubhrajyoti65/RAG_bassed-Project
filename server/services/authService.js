@@ -1,8 +1,10 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const { OAuth2Client } = require("google-auth-library");
 const config = require("../config");
 const User = require("../models/User");
+const { sendResetOtpEmail } = require("./emailService");
 
 let googleClient;
 
@@ -318,6 +320,96 @@ async function updateProfile(userId, payload = {}) {
   return toPublicUser(user);
 }
 
+// Creates a one-time password reset token for a local account
+async function requestPasswordReset({ email }) {
+  const safeEmail = normalizeEmail(email);
+
+  if (!safeEmail || !safeEmail.includes("@")) {
+    const error = new Error("Please provide a valid email address.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const user = await User.findOne({ email: safeEmail });
+  const genericResponse = {
+    message:
+      "If an account with that email exists, a password reset OTP has been sent.",
+  };
+
+  if (!user || !user.passwordHash) {
+    return genericResponse;
+  }
+
+  const rawOtp = String(crypto.randomInt(0, 1000000)).padStart(6, "0");
+  const tokenHash = crypto.createHash("sha256").update(rawOtp).digest("hex");
+  const expiresAt = new Date(
+    Date.now() + config.PASSWORD_RESET_TTL_MINUTES * 60 * 1000
+  );
+
+  user.passwordResetTokenHash = tokenHash;
+  user.passwordResetExpiresAt = expiresAt;
+  await user.save();
+
+  try {
+    await sendResetOtpEmail({
+      toEmail: user.email,
+      recipientName: user.name,
+      otp: rawOtp,
+      ttlMinutes: config.PASSWORD_RESET_TTL_MINUTES,
+    });
+  } catch (emailError) {
+    user.passwordResetTokenHash = null;
+    user.passwordResetExpiresAt = null;
+    await user.save();
+
+    const error = new Error(
+      "Could not send reset OTP email right now. Please try again shortly."
+    );
+    error.statusCode = 503;
+    throw error;
+  }
+
+  return genericResponse;
+}
+
+// Resets password using a valid, unexpired token
+async function resetPassword({ token, otp, newPassword }) {
+  const safeToken = String(otp || token || "").trim();
+  const safePassword = String(newPassword || "");
+
+  if (!safeToken) {
+    const error = new Error("Reset OTP is required.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (safePassword.length < 6) {
+    const error = new Error("Password must be at least 6 characters long.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const tokenHash = crypto.createHash("sha256").update(safeToken).digest("hex");
+  const user = await User.findOne({
+    passwordResetTokenHash: tokenHash,
+    passwordResetExpiresAt: { $gt: new Date() },
+  });
+
+  if (!user) {
+    const error = new Error("Reset OTP is invalid or has expired.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  user.passwordHash = await bcrypt.hash(safePassword, 10);
+  user.authProvider = user.authProvider || "local";
+  user.passwordResetTokenHash = null;
+  user.passwordResetExpiresAt = null;
+  await user.save();
+
+  return { message: "Password has been reset successfully. Please sign in." };
+}
+
 module.exports = {
   signup,
   login,
@@ -326,4 +418,6 @@ module.exports = {
   verifyToken,
   getUserById,
   updateProfile,
+  requestPasswordReset,
+  resetPassword,
 };

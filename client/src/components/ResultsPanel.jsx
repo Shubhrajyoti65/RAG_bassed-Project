@@ -9,7 +9,7 @@ function formatAnalysisTime(ms) {
 }
 
 // Container component that holds the full suite of analysis results sections
-export default function ResultsPanel({ result, isDark, analysisTimeMs }) {
+export default function ResultsPanel({ result, analysisTimeMs }) {
   const timeLabel = formatAnalysisTime(analysisTimeMs);
 
   return (

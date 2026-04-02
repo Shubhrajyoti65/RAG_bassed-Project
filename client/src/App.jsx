@@ -13,7 +13,14 @@ import TermsOfService from "./pages/TermsOfService";
 import JudgmentDetailPage from "./pages/JudgmentDetailPage";
 import { useAnalysis } from "./hooks/useAnalysis";
 import { fetchHistory } from "./api/historyApi";
-import { getCurrentUser, googleAuthUser, loginUser, signupUser } from "./api/authApi";
+import {
+  getCurrentUser,
+  googleAuthUser,
+  loginUser,
+  signupUser,
+  requestPasswordReset,
+  resetPasswordWithToken,
+} from "./api/authApi";
 
 const AUTH_STORAGE_KEY = "nyaya_auth";
 const THEME_STORAGE_KEY = "nyaya_theme";
@@ -190,6 +197,26 @@ function App() {
     }
   }
 
+// Handles forgot-password request for an existing user account
+  async function handleForgotPassword({ email }) {
+    setAuthLoading(true);
+    try {
+      return await requestPasswordReset({ email });
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
+// Handles password reset submission using reset token and new password
+  async function handleResetPassword({ token: resetToken, newPassword }) {
+    setAuthLoading(true);
+    try {
+      return await resetPasswordWithToken({ token: resetToken, newPassword });
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
 // Loads a specific history item for detailed viewing in the analysis panel
   function handleHistorySelect(item) {
     loadSavedResult(item.analysis);
@@ -212,6 +239,8 @@ function App() {
                 onLogin={handleLogin}
                 onSignup={handleSignup}
                 onGoogleAuth={handleGoogleAuth}
+                onForgotPassword={handleForgotPassword}
+                onResetPassword={handleResetPassword}
                 loading={authLoading}
                 isDark={isDark}
               />

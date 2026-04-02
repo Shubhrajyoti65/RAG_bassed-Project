@@ -5,6 +5,9 @@ const initialForm = {
   name: "",
   email: "",
   password: "",
+  resetToken: "",
+  newPassword: "",
+  confirmPassword: "",
 };
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
@@ -26,11 +29,18 @@ function getAuthBackgroundPath(fileName) {
 }
 
 // Unified component for user login and signup with Google OAuth support
-export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, isDark }) {
+export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, onForgotPassword, onResetPassword, loading, isDark }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState(searchParams.get("tab") === "signup" ? "signup" : "login");
+  const [flow, setFlow] = useState(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "forgot") return "forgot";
+    if (tab === "reset") return "reset";
+    return "auth";
+  });
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [googleAvailable, setGoogleAvailable] = useState(false);
   const [authBackground, setAuthBackground] = useState(() => getAuthBackgroundPath(AUTH_BG_FILES[0]));
   const googleButtonRef = useRef(null);
@@ -97,8 +107,16 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
 
   useEffect(() => {
     const tab = searchParams.get("tab");
+    if (tab === "forgot") {
+      setFlow("forgot");
+    } else if (tab === "reset") {
+      setFlow("reset");
+    } else {
+      setFlow("auth");
+    }
     setMode(tab === "signup" ? "signup" : "login");
     setError("");
+    setSuccess("");
   }, [searchParams]);
 
   useEffect(() => {
@@ -196,6 +214,63 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
+    setSuccess("");
+
+    if (flow === "forgot") {
+      if (!form.email.trim()) {
+        setError("Email is required.");
+        return;
+      }
+
+      try {
+        const payload = await onForgotPassword({ email: form.email.trim() });
+        setSuccess(payload?.message || "If your account exists, a reset OTP has been sent to your email.");
+        setSearchParams({ tab: "reset" });
+        setForm((prev) => ({
+          ...prev,
+          password: "",
+          resetToken: "",
+          newPassword: "",
+          confirmPassword: "",
+        }));
+      } catch (err) {
+        setError(err.message || "Could not request password reset.");
+      }
+      return;
+    }
+
+    if (flow === "reset") {
+      const token = form.resetToken.trim();
+      if (!token) {
+        setError("Reset OTP is required.");
+        return;
+      }
+
+      if (!form.newPassword) {
+        setError("New password is required.");
+        return;
+      }
+
+      if (form.newPassword.length < 6) {
+        setError("Password must be at least 6 characters long.");
+        return;
+      }
+
+      if (form.newPassword !== form.confirmPassword) {
+        setError("Passwords do not match.");
+        return;
+      }
+
+      try {
+        const payload = await onResetPassword({ token, newPassword: form.newPassword });
+        setSuccess(payload?.message || "Password has been reset. Please sign in.");
+        setForm(initialForm);
+        setSearchParams({});
+      } catch (err) {
+        setError(err.message || "Could not reset password.");
+      }
+      return;
+    }
 
     if (!form.email.trim() || !form.password) {
       setError("Email and password are required.");
@@ -299,50 +374,69 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
           <section className="p-7 sm:p-8 bg-surface">
             <div className="mb-5">
               <h3 className="font-headline text-2xl font-bold text-text-primary">
-                {mode === "signup" ? "Create account" : "Sign in"}
+                {flow === "forgot" ? "Forgot password" : flow === "reset" ? "Reset password" : mode === "signup" ? "Create account" : "Sign in"}
               </h3>
             </div>
 
-            <div className="relative mb-5 grid grid-cols-2 rounded-xl border border-border p-1 bg-surface ui-border-highlight transition-all duration-300">
-              <div
-                className="absolute top-1 bottom-1 rounded-lg bg-primary transition-all duration-200"
-                style={{
-                  width: "calc(50% - 4px)",
-                  left: mode === "login" ? "4px" : "calc(50% + 0px)",
-                }}
-              />
+            {flow === "auth" ? (
+              <div className="relative mb-5 grid grid-cols-2 rounded-xl border border-border p-1 bg-surface ui-border-highlight transition-all duration-300">
+                <div
+                  className="absolute top-1 bottom-1 rounded-lg bg-primary transition-all duration-200"
+                  style={{
+                    width: "calc(50% - 4px)",
+                    left: mode === "login" ? "4px" : "calc(50% + 0px)",
+                  }}
+                />
 
-              <button
-                type="button"
-                disabled={loading}
-                onClick={() => {
-                  setSearchParams({});
-                  setError("");
-                }}
-                className={`relative z-10 rounded-lg py-2.5 font-label text-sm font-bold transition-colors ${
-                  mode === "login" ? "text-white" : "text-text-secondary"
-                }`}
-              >
-                Sign in
-              </button>
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => {
+                    setSearchParams({});
+                    setError("");
+                    setSuccess("");
+                  }}
+                  className={`relative z-10 rounded-lg py-2.5 font-label text-sm font-bold transition-colors ${
+                    mode === "login" ? "text-white" : "text-text-secondary"
+                  }`}
+                >
+                  Sign in
+                </button>
 
-              <button
-                type="button"
-                disabled={loading}
-                onClick={() => {
-                  setSearchParams({ tab: "signup" });
-                  setError("");
-                }}
-                className={`relative z-10 rounded-lg py-2.5 font-label text-sm font-bold transition-colors ${
-                  mode === "signup" ? "text-white" : "text-text-secondary"
-                }`}
-              >
-                Register
-              </button>
-            </div>
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => {
+                    setSearchParams({ tab: "signup" });
+                    setError("");
+                    setSuccess("");
+                  }}
+                  className={`relative z-10 rounded-lg py-2.5 font-label text-sm font-bold transition-colors ${
+                    mode === "signup" ? "text-white" : "text-text-secondary"
+                  }`}
+                >
+                  Register
+                </button>
+              </div>
+            ) : (
+              <div className="mb-5">
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => {
+                    setSearchParams({});
+                    setError("");
+                    setSuccess("");
+                  }}
+                  className="font-label text-sm font-semibold text-primary hover:underline"
+                >
+                  Back to sign in
+                </button>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-3.5">
-              {mode === "signup" && (
+              {flow === "auth" && mode === "signup" && (
                 <div>
                   <label className="block mb-1.5 font-label text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
                     Full name
@@ -372,19 +466,90 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
                 />
               </div>
 
-              <div>
-                <label className="block mb-1.5 font-label text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={(event) => updateField("password", event.target.value)}
-                  placeholder="Enter password"
-                  disabled={loading}
-                  className="w-full app-input ui-border-highlight px-4 py-3 text-sm"
-                />
-              </div>
+              {flow === "auth" ? (
+                <>
+                  <div>
+                    <label className="block mb-1.5 font-label text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      value={form.password}
+                      onChange={(event) => updateField("password", event.target.value)}
+                      placeholder="Enter password"
+                      disabled={loading}
+                      className="w-full app-input ui-border-highlight px-4 py-3 text-sm"
+                    />
+                  </div>
+
+                  {mode === "login" && (
+                    <div className="-mt-1 text-right">
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={() => {
+                          setSearchParams({ tab: "forgot" });
+                          setError("");
+                          setSuccess("");
+                        }}
+                        className="font-label text-xs font-semibold uppercase tracking-[0.12em] text-primary hover:underline"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : null}
+
+              {flow === "reset" && (
+                <>
+                  <div>
+                    <label className="block mb-1.5 font-label text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
+                      Reset OTP
+                    </label>
+                    <input
+                      type="text"
+                      value={form.resetToken}
+                      onChange={(event) => updateField("resetToken", event.target.value)}
+                      placeholder="Enter 6-digit OTP from email"
+                      disabled={loading}
+                      className="w-full app-input ui-border-highlight px-4 py-3 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1.5 font-label text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
+                      New password
+                    </label>
+                    <input
+                      type="password"
+                      value={form.newPassword}
+                      onChange={(event) => updateField("newPassword", event.target.value)}
+                      placeholder="Enter new password"
+                      disabled={loading}
+                      className="w-full app-input ui-border-highlight px-4 py-3 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1.5 font-label text-xs font-semibold uppercase tracking-[0.14em] text-text-secondary">
+                      Confirm password
+                    </label>
+                    <input
+                      type="password"
+                      value={form.confirmPassword}
+                      onChange={(event) => updateField("confirmPassword", event.target.value)}
+                      placeholder="Re-enter new password"
+                      disabled={loading}
+                      className="w-full app-input ui-border-highlight px-4 py-3 text-sm"
+                    />
+                  </div>
+                </>
+              )}
+
+              {success && (
+                <div className="rounded-xl border border-green-300/60 bg-green-50/80 px-4 py-3 text-sm text-green-700">
+                  {success}
+                </div>
+              )}
 
               {error && (
                 <div className="rounded-xl border border-red-300/60 bg-red-50/70 px-4 py-3 text-sm text-red-700">
@@ -397,54 +562,88 @@ export default function AuthPanel({ onLogin, onSignup, onGoogleAuth, loading, is
                 disabled={loading}
                 className="w-full app-button-primary ui-button-enhance ui-button-shine py-3 font-label font-bold text-sm disabled:opacity-55 disabled:cursor-not-allowed"
               >
-                {loading ? "Authenticating..." : mode === "signup" ? "Create account" : "Sign in"}
+                {loading
+                  ? flow === "forgot"
+                    ? "Sending OTP..."
+                    : flow === "reset"
+                      ? "Resetting password..."
+                      : "Authenticating..."
+                  : flow === "forgot"
+                    ? "Send reset OTP"
+                    : flow === "reset"
+                      ? "Reset password"
+                      : mode === "signup"
+                        ? "Create account"
+                        : "Sign in"}
               </button>
 
-              <div className="relative py-1">
-                <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-surface px-3 font-label text-[11px] font-semibold uppercase tracking-[0.14em] text-text-secondary">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
+              {flow === "auth" && (
+                <>
+                  <div className="relative py-1">
+                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                      <div className="w-full border-t border-border" />
+                    </div>
+                    <div className="relative flex justify-center">
+                      <span className="bg-surface px-3 font-label text-[11px] font-semibold uppercase tracking-[0.14em] text-text-secondary">
+                        Or continue with
+                      </span>
+                    </div>
+                  </div>
 
-              {googleConfigured ? (
-                <div className={`${loading ? "pointer-events-none opacity-70" : ""} flex justify-center`}>
-                  <div ref={googleButtonRef} />
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setError("Google sign-in is not configured. Add VITE_GOOGLE_CLIENT_ID in client/.env and restart the client.");
-                  }}
-                  className="w-full app-button-secondary ui-button-enhance py-3 text-sm font-label font-semibold"
-                >
-                  Continue with Google
-                </button>
-              )}
+                  {googleConfigured ? (
+                    <div className={`${loading ? "pointer-events-none opacity-70" : ""} flex justify-center`}>
+                      <div ref={googleButtonRef} />
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setError("Google sign-in is not configured. Add VITE_GOOGLE_CLIENT_ID in client/.env and restart the client.");
+                      }}
+                      className="w-full app-button-secondary ui-button-enhance py-3 text-sm font-label font-semibold"
+                    >
+                      Continue with Google
+                    </button>
+                  )}
 
-              {googleConfigured && !googleAvailable && (
-                <p className="text-center font-body text-xs text-text-secondary">Google sign-in is loading...</p>
+                  {googleConfigured && !googleAvailable && (
+                    <p className="text-center font-body text-xs text-text-secondary">Google sign-in is loading...</p>
+                  )}
+                </>
               )}
             </form>
 
-            <p className="mt-4 text-center font-body text-sm text-text-secondary">
-              {mode === "login" ? "New here? " : "Already have an account? "}
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchParams(mode === "login" ? { tab: "signup" } : {});
-                  setError("");
-                }}
-                className="font-semibold text-primary hover:underline"
-              >
-                {mode === "login" ? "Create account" : "Sign in"}
-              </button>
-            </p>
+            {flow === "auth" ? (
+              <p className="mt-4 text-center font-body text-sm text-text-secondary">
+                {mode === "login" ? "New here? " : "Already have an account? "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchParams(mode === "login" ? { tab: "signup" } : {});
+                    setError("");
+                    setSuccess("");
+                  }}
+                  className="font-semibold text-primary hover:underline"
+                >
+                  {mode === "login" ? "Create account" : "Sign in"}
+                </button>
+              </p>
+            ) : (
+              <p className="mt-4 text-center font-body text-sm text-text-secondary">
+                Remembered your password?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchParams({});
+                    setError("");
+                    setSuccess("");
+                  }}
+                  className="font-semibold text-primary hover:underline"
+                >
+                  Go to sign in
+                </button>
+              </p>
+            )}
           </section>
         </div>
       </div>

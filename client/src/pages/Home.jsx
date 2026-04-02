@@ -6,7 +6,7 @@ const FEATURES = [
   {
     title: "AI Case Analysis",
     description:
-      "Understand complicated domestic violence narratives through structured issue mapping and legal context extraction.",
+      "Understand complex legal narratives through structured issue mapping and legal context extraction.",
     icon: (
       <path
         strokeLinecap="round"
@@ -19,7 +19,7 @@ const FEATURES = [
   {
     title: "Provision Matching",
     description:
-      "Identify relevant statutory provisions and map your facts to legal protections likely to matter in consultation.",
+      "Identify relevant statutory provisions and map your facts to legal pathways likely to matter in consultation.",
     icon: (
       <path
         strokeLinecap="round"
@@ -222,7 +222,7 @@ export default function Home() {
             </h1>
 
             <p className="hero-copy-text mt-5 max-w-2xl font-body text-base sm:text-lg font-bold text-text-secondary leading-relaxed">
-              Nyaay Sahayak turns complex domestic violence case details into structured and understandable legal guidance so you can prepare confidently.
+              Nyaay Sahayak turns complex case details into structured and understandable legal guidance so you can prepare confidently.
             </p>
 
             <div className="hero-copy-actions mt-8 flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -337,10 +337,10 @@ export default function Home() {
             Nyaay Sahayak was developed at MNNIT Allahabad to bridge the gap between legal complexity and real-world access to guidance.
           </p>
           <p>
-            By combining retrieval-augmented generation with curated High Court judgments, the platform helps users understand relevant legal pathways faster.
+            By combining retrieval-augmented generation with curated judgments, the platform helps users understand relevant legal pathways faster.
           </p>
           <p>
-            The output is informational and structured for preparation, so advocates and users can discuss facts with better clarity.
+            The output is informational and structured for preparation, so advocates and users can discuss facts with better clarity across legal domains.
           </p>
         </div>
       </section>

@@ -729,7 +729,7 @@ body {
   background: color-mix(in srgb, var(--surface) 97%, transparent);
   border: 1px solid var(--border);
   border-radius: 1.5rem;
-  padding: 1.5rem 1.75rem;
+  padding: 0.88rem 1.08rem;
   backdrop-filter: blur(6px);
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.13);
   transition: box-shadow 280ms ease;
@@ -761,7 +761,7 @@ body {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.56rem;
 }
 
 .judgment-ticker-badge {
@@ -773,7 +773,7 @@ body {
   border-radius: 999px;
   padding: 0.3rem 0.85rem;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -791,56 +791,10 @@ body {
 
 .judgment-ticker-date {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
   letter-spacing: 0.04em;
-}
-
-/* Pill navigation */
-.judgment-ticker-pills-wrap {
-  overflow: hidden;
-  margin-bottom: 1rem;
-}
-
-.judgment-ticker-pills {
-  display: flex;
-  gap: 0.45rem;
-  overflow-x: auto;
-  padding-bottom: 2px;
-  scrollbar-width: none;
-}
-
-.judgment-ticker-pills::-webkit-scrollbar {
-  display: none;
-}
-
-.judgment-ticker-pill {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border);
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 220ms ease;
-}
-
-.judgment-ticker-pill:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 8%, transparent);
-}
-
-.judgment-ticker-pill.active {
-  border-color: var(--primary);
-  background: var(--primary);
-  color: #ffffff;
-  transform: scale(1.1);
 }
 
 /* Main card */
@@ -848,7 +802,7 @@ body {
   background: color-mix(in srgb, var(--surface) 60%, var(--bg) 40%);
   border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   border-radius: 1.1rem;
-  padding: 1.1rem 1.25rem 1rem;
+  padding: 0.84rem 0.96rem 0.8rem;
   animation: ticker-card-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -863,7 +817,7 @@ body {
 
 .judgment-ticker-court {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -876,26 +830,26 @@ body {
 
 .judgment-ticker-card-date {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   font-weight: 500;
 }
 
 .judgment-ticker-title {
   font-family: "Outfit", "Plus Jakarta Sans", sans-serif;
-  font-size: 1rem;
+  font-size: 1.08rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 0.45rem;
+  margin: 0 0 0.38rem;
   line-height: 1.3;
 }
 
 .judgment-ticker-summary {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 0.815rem;
+  font-size: 0.89rem;
   color: var(--text-secondary);
-  line-height: 1.65;
-  margin: 0 0 0.9rem;
+  line-height: 1.58;
+  margin: 0 0 0.72rem;
 }
 
 /* Progress bar */
@@ -925,7 +879,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.85rem;
-  margin-top: 0.85rem;
+  margin-top: 0.52rem;
 }
 
 .judgment-ticker-ctrl-btn {
@@ -952,11 +906,18 @@ body {
 
 .judgment-ticker-counter {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
   min-width: 40px;
   text-align: center;
+}
+
+/* Hide legacy top ticker pointer strip if stale/cached markup includes it */
+.judgment-ticker-pills-wrap,
+.judgment-ticker-pills,
+.judgment-ticker-pill {
+  display: none !important;
 }
 
 /* Dark mode tweaks */
@@ -1006,9 +967,9 @@ body {
 
 .judgment-ticker-read-more {
   display: inline-block;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: var(--primary);

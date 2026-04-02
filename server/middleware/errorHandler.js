@@ -64,6 +64,16 @@ function errorHandler(err, req, res, next) {
     });
   }
 
+  if (
+    Number.isInteger(err.statusCode) &&
+    err.statusCode >= 400 &&
+    err.statusCode < 600
+  ) {
+    return res.status(err.statusCode).json({
+      error: err.message || "Request failed.",
+    });
+  }
+
   res.status(500).json({
     error:
       !isProduction && err.message

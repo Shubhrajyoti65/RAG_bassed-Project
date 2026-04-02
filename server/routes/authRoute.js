@@ -6,6 +6,8 @@ const {
   authenticateWithGoogle,
   issueToken,
   updateProfile,
+  requestPasswordReset,
+  resetPassword,
 } = require("../services/authService");
 
 const router = express.Router();
@@ -38,6 +40,26 @@ router.post("/auth/google", async (req, res, next) => {
     const user = await authenticateWithGoogle(req.body || {});
     const token = issueToken(user);
     res.json({ token, user });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Route to generate a password reset token for existing users
+router.post("/auth/forgot-password", async (req, res, next) => {
+  try {
+    const payload = await requestPasswordReset(req.body || {});
+    res.json(payload);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Route to reset password using a valid reset token
+router.post("/auth/reset-password", async (req, res, next) => {
+  try {
+    const payload = await resetPassword(req.body || {});
+    res.json(payload);
   } catch (error) {
     next(error);
   }
