@@ -1,9 +1,11 @@
 // Sends case text or a PDF file to the backend for automated legal analysis
-<<<<<<< HEAD
-export async function submitAnalysis({ text, file, category, language, token }) {
-=======
-export async function submitAnalysis({ text, file, token }) {
->>>>>>> dev
+export async function submitAnalysis({
+  text,
+  file,
+  category,
+  language,
+  token,
+}) {
   let response;
   const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
 

@@ -14,9 +14,6 @@ class AnalyzeRequest(BaseModel):
     category: str = "general"
     language: str = "English"
 
-
-<<<<<<< HEAD
-
 def enrich_property_query(text: str, category: str) -> str:
     if category.lower() == "property":
         legal_terms = (
@@ -37,12 +34,6 @@ def enrich_property_query(text: str, category: str) -> str:
     return text
 
 
-
-
-
-
-=======
->>>>>>> dev
 # FastAPI endpoint to perform RAG-based analysis on user-provided case text
 @app.post("/analyze")
 def analyze(payload: AnalyzeRequest):

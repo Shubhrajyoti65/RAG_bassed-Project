@@ -8,20 +8,22 @@ export function useAnalysis() {
   const [error, setError] = useState(null);
   const [analysisTimeMs, setAnalysisTimeMs] = useState(null);
 
-<<<<<<< HEAD
   // Executes the analysis by calling the API and tracking performance/loading states
   async function analyze({ text, file, category, language, token }) {
-=======
-// Executes the analysis by calling the API and tracking performance/loading states
-  async function analyze({ text, file, token }) {
->>>>>>> dev
     const startedAt = performance.now();
     setLoading(true);
     setError(null);
     setResult(null);
     setAnalysisTimeMs(null);
+
     try {
-      const data = await submitAnalysis({ text, file, category, language, token });
+      const data = await submitAnalysis({
+        text,
+        file,
+        category,
+        language,
+        token,
+      });
       setResult(data);
       setAnalysisTimeMs(Math.max(0, Math.round(performance.now() - startedAt)));
       return { ok: true, data };
@@ -34,14 +36,14 @@ export function useAnalysis() {
     }
   }
 
-// Resets the analysis state to its initial blank values
+  // Resets the analysis state to its initial blank values
   function reset() {
     setResult(null);
     setError(null);
     setAnalysisTimeMs(null);
   }
 
-// Loads a previously saved analysis result into the active state
+  // Loads a previously saved analysis result into the active state
   function loadSavedResult(savedResult) {
     setResult(savedResult || null);
     setError(null);
