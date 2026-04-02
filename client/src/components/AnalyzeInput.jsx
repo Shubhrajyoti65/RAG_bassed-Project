@@ -1,5 +1,7 @@
-import { useRef, useState } from "react";
-
+import { useRef, useState, useEffect } from "react";
+import Keyboard from "react-simple-keyboard";
+import "react-simple-keyboard/build/css/index.css";
+import { getKeyboardLayout } from "./keyboardLayouts";
 const CATEGORY_OPTIONS = [
   "Property",
   "Domestic Violence",
@@ -8,13 +10,41 @@ const CATEGORY_OPTIONS = [
   "Dowry",
 ];
 
+// Safely extract the component in case Vite wraps it in a default object
+const VirtualKeyboard = Keyboard.default || Keyboard;
+
 // Component for user to input legal case text or upload a PDF for analysis
 export default function AnalyzeInput({ onAnalyze, loading }) {
   const [text, setText] = useState("");
   const [file, setFile] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("Domestic Violence");
   const [selectedLanguage, setSelectedLanguage] = useState("English");
+  const [showKeyboard, setShowKeyboard] = useState(false);
+  const [layoutName, setLayoutName] = useState("default");
+  const keyboardRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  const onKeyPress = (button) => {
+    if (button === "{shift}" || button === "{lock}") {
+      setLayoutName(layoutName === "default" ? "shift" : "default");
+    }
+  };
+
+  // Sync keyboard when user highlights text and deletes it, or types physically
+  useEffect(() => {
+    if (keyboardRef.current) {
+      keyboardRef.current.setInput(text);
+    }
+  }, [text]);
+
+  // Manage keyboard visibility based on language or file selection
+  useEffect(() => {
+    if (file || selectedLanguage === "English") {
+      setShowKeyboard(false);
+    } else {
+      setShowKeyboard(true); // Auto-show for other languages
+    }
+  }, [file, selectedLanguage]);
 
 // Validates if the selected file is a PDF and sets it to state
   function processFile(selected) {
@@ -149,6 +179,55 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
               style={{ width: `${Math.min(100, (charCount / MIN_CHARS) * 100)}%` }}
             />
           </div>
+        </div>
+      )}
+
+      {/* Keyboard Toggle */}
+      {selectedLanguage !== "English" && !file && (
+        <div className="mt-3 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowKeyboard(!showKeyboard)}
+            className={`flex items-center gap-1.5 text-xs font-semibold transition-colors px-3 py-1.5 rounded-full ui-border-highlight ${
+              showKeyboard 
+                ? "bg-primary/20 text-primary border-primary/50" 
+                : "bg-surface/50 text-text-secondary hover:text-primary hover:bg-surface"
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            {showKeyboard ? "Hide Keyboard" : `⌨️ Show ${selectedLanguage} Keyboard`}
+          </button>
+        </div>
+      )}
+
+      {/* Virtual Keyboard */}
+      {showKeyboard && selectedLanguage !== "English" && !file && (
+        <div className="mt-2 p-1.5 bg-surface/90 rounded-xl ui-border-highlight shadow-lg animate-popIn">
+          <style>{`
+            .my-custom-theme.hg-theme-default {
+              background-color: transparent;
+              padding: 5px;
+            }
+            .my-custom-theme .hg-button {
+              background: rgba(255, 255, 255, 0.05);
+              border: 1px solid rgba(255, 255, 255, 0.1);
+              color: var(--color-text-primary, #ffffff);
+              box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+            }
+            .my-custom-theme .hg-button:active {
+              background: rgba(255, 255, 255, 0.1);
+            }
+          `}</style>
+          <VirtualKeyboard
+            keyboardRef={(r) => (keyboardRef.current = r)}
+            layoutName={layoutName}
+            layout={getKeyboardLayout(selectedLanguage) || { default: ["{bksp}"] }}
+            onChange={(input) => setText(input)}
+            onKeyPress={onKeyPress}
+            theme="hg-theme-default hg-layout-default my-custom-theme"
+          />
         </div>
       )}
 

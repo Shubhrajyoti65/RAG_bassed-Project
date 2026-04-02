@@ -84,6 +84,11 @@ cd client
 npm install
 ```
 
+*Note: The frontend now includes a multi-language virtual onscreen keyboard. Running `npm install` handles this automatically, but if you need to install the dependencies manually, run:*
+```bash
+npm install react-simple-keyboard simple-keyboard-layouts
+```
+
 Python service:
 
 ```bash
