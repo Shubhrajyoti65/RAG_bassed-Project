@@ -84,11 +84,6 @@ cd client
 npm install
 ```
 
-*Note: The frontend now includes a multi-language virtual onscreen keyboard. Running `npm install` handles this automatically, but if you need to install the dependencies manually, run:*
-```bash
-npm install react-simple-keyboard simple-keyboard-layouts
-```
-
 Python service:
 
 ```bash
@@ -110,7 +105,8 @@ Start Python RAG service first, then Node API, then client.
 Start Python RAG service (Windows cmd):
 
 ```cmd
-for /f "tokens=1,* delims==" %A in ('findstr /B /C:"GEMINI_API_KEY=" server\.env') do set GEMINI_API_KEY=%B && .venv\Scripts\python.exe -m uvicorn rag_service.app:app --host 127.0.0.1 --port 8000
+cd server
+npm run rag:dev
 ```
 
 Start Node API:
