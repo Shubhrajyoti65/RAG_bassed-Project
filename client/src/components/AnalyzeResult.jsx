@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 // Helper function to format duration in milliseconds to a human-readable string
 function formatDuration(ms) {
@@ -17,41 +16,33 @@ function SimilarityBar({ score }) {
       ? {
           text: "text-green-700 dark:text-green-400",
           label: "High Match",
-          progress: "from-green-600 to-emerald-600 dark:from-green-400 dark:to-green-500",
-          thumb: "bg-green-600 dark:bg-green-500",
+          fill: "bg-green-600 dark:bg-green-500",
         }
       : safeScore >= 50
       ? {
           text: "text-amber-700 dark:text-amber-300",
-          label: "Moderate",
-          progress: "from-amber-500 to-yellow-600 dark:from-amber-400 dark:to-yellow-400",
-          thumb: "bg-amber-600 dark:bg-amber-400",
+          label: "Moderate Match",
+          fill: "bg-amber-500 dark:bg-amber-400",
         }
       : {
           text: "text-rose-700 dark:text-rose-300",
           label: "Low Match",
-          progress: "from-rose-500 to-red-600 dark:from-rose-400 dark:to-red-400",
-          thumb: "bg-rose-600 dark:bg-rose-400",
+          fill: "bg-rose-500 dark:bg-rose-400",
         };
 
   return (
-    <div className="w-full min-w-44 rounded-lg border border-border/80 bg-surface/70 px-2.5 py-1.5">
-      <div className="mb-1 flex justify-center">
-        <span className={`font-headline text-sm font-bold ${tone.text}`}>{safeScore}%</span>
+    <div className="w-full min-w-36 max-w-44">
+      <div className="mb-1 flex items-center gap-2 leading-none">
+        <span className={`font-headline text-[1.25rem] font-bold ${tone.text}`}>{safeScore}%</span>
+        <span className={`font-label text-sm font-semibold ${tone.text}`}>{tone.label}</span>
       </div>
 
-      <div className="relative">
-        <div className="h-2 rounded-full bg-slate-300/30" />
+      <div className="h-1.5 rounded-full bg-slate-200 dark:bg-slate-700/70 overflow-hidden">
         <div
-          className={`absolute left-0 top-0 h-2 rounded-full bg-linear-to-r ${tone.progress} transition-all duration-500`}
+          className={`h-full rounded-full ${tone.fill} transition-all duration-500`}
           style={{ width: `${safeScore}%` }}
         />
-        <div
-          className={`pointer-events-none absolute top-1/2 h-3 w-3 -translate-y-1/2 rounded-full ${tone.thumb}`}
-          style={{ left: `calc(${safeScore}% - 0.375rem)` }}
-        />
       </div>
-      <p className={`mt-1 text-center font-label text-[9px] font-semibold ${tone.text}`}>{tone.label}</p>
     </div>
   );
 }
@@ -73,15 +64,6 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
     : userInput?.text
     ? userInput.text.replace(/^\[Category:[^\]]*\]\n?/, "").trim()
     : null;
-
-  const navigate = useNavigate();
-
-  // Persist similar cases to sessionStorage so CaseDetailPage can read them
-  useEffect(() => {
-    if (cases.length > 0) {
-      sessionStorage.setItem("nyaya_similar_cases", JSON.stringify(cases));
-    }
-  }, [cases]);
 
   return (
     <div className="max-w-5xl mx-auto space-y-5 animate-popIn">
@@ -244,14 +226,14 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
                     {i + 1}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-label text-base font-semibold text-text-primary">{c.caseTitle}</p>
+                    <p className="font-label text-lg font-semibold text-text-primary leading-snug">{c.caseTitle}</p>
                     <p className="font-label text-sm text-text-secondary mt-0.5">
                       {c.year}{c.caseNumber ? ` · ${c.caseNumber}` : ""}
                     </p>
                   </div>
                   {/* Similarity score — top right */}
                   {typeof c.similarityScore === "number" && (
-                    <div className="shrink-0 w-full max-w-52">
+                    <div className="shrink-0 w-full max-w-52 ml-2">
                       <SimilarityBar score={c.similarityScore} />
                     </div>
                   )}
@@ -292,16 +274,6 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
                       Original judgment unavailable
                     </span>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/case/${i}`)}
-                    className="inline-flex items-center gap-1.5 font-label text-xs font-bold text-primary bg-primary/8 hover:bg-primary hover:text-white border border-primary/25 hover:border-primary px-3 py-1.5 rounded-lg transition-all duration-200"
-                  >
-                    Read Full Judgment
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
                 </div>
               </div>
             ))}

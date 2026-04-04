@@ -11,7 +11,6 @@ import ContactUsPage from "./pages/ContactUsPage";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import JudgmentDetailPage from "./pages/JudgmentDetailPage";
-import CaseDetailPage from "./pages/CaseDetailPage";
 import { useAnalysis } from "./hooks/useAnalysis";
 import { fetchHistory } from "./api/historyApi";
 import {
@@ -282,7 +281,6 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/judgment/:id" element={<JudgmentDetailPage />} />
-          <Route path="/case/:index" element={<CaseDetailPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
     </Layout>
