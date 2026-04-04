@@ -64,6 +64,8 @@ Generate a JSON response strictly adhering to the following structure:
             "caseTitle": "...",
             "year": 2020,
             "caseNumber": "...",
+            "caseId": null,
+            "pdfUrl": null,
             "similarityScore": "Integer from 0 to 100",
             "keyParallels": "...",
             "decision": "Brief 1-2 sentence summary of the court's final decision. Do not copy the long text."
@@ -405,6 +407,8 @@ def normalize_analysis_output(payload: dict) -> dict:
             if not isinstance(item, dict):
                 continue
             item["similarityScore"] = normalize_similarity_score(item.get("similarityScore"))
+            item["caseId"] = item.get("caseId") or None
+            item["pdfUrl"] = item.get("pdfUrl") or None
 
     return normalized
 
@@ -464,6 +468,8 @@ def build_quota_fallback_analysis(case_text: str, docs: list[Document]) -> dict:
                 "caseTitle": metadata.get("caseTitle", "Relevant Retrieved Case"),
                 "year": int(metadata.get("year") or 0),
                 "caseNumber": metadata.get("caseNumber", "N/A"),
+                "caseId": None,
+                "pdfUrl": None,
                 "similarityScore": similarity_score,
                 "keyParallels": (
                     "This result was retrieved from similar High Court domestic violence "

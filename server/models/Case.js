@@ -1,46 +1,79 @@
 const mongoose = require("mongoose");
 
-/**
- * Case model — stores metadata and Cloudinary pdfUrl for each indexed judgment.
- * Created separately from User/History to keep concerns clean.
- */
+function normalizeComparable(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[_\-]+/g, " ")
+    .replace(/[^a-z0-9 ]+/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const caseSchema = new mongoose.Schema(
   {
-    // Human-readable title (from filename or first line of PDF)
     caseTitle: {
       type: String,
       required: true,
       trim: true,
-      index: true,
     },
-
-    // Court case number / identifier (may be empty for older judgments)
     caseNumber: {
       type: String,
       default: "",
       trim: true,
-      index: true,
     },
-
-    // Year of judgment
     year: {
       type: Number,
       default: null,
     },
-
-    // Original PDF filename on disk (used for lookup/dedup)
+    facts: {
+      type: String,
+      default: "",
+    },
+    legalReasoning: {
+      type: String,
+      default: "",
+    },
+    decision: {
+      type: String,
+      default: "",
+    },
+    relevantSections: {
+      type: [String],
+      default: [],
+    },
     sourceFile: {
       type: String,
       required: true,
       unique: true,
       trim: true,
     },
-
-    // Cloudinary secure_url — set by the migration script
     pdfUrl: {
       type: String,
-      default: null,
+      required: true,
       trim: true,
+    },
+    embedding: {
+      type: [Number],
+      default: undefined,
+    },
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    normalizedTitle: {
+      type: String,
+      index: true,
+      default: "",
+    },
+    caseNumberNormalized: {
+      type: String,
+      index: true,
+      default: "",
+    },
+    sourceFileNormalized: {
+      type: String,
+      index: true,
+      default: "",
     },
   },
   {
@@ -49,7 +82,10 @@ const caseSchema = new mongoose.Schema(
   }
 );
 
-// Custom index to find by normalised title efficiently
-caseSchema.index({ caseTitle: "text" });
+caseSchema.pre("validate", function setNormalizedFields() {
+  this.normalizedTitle = normalizeComparable(this.caseTitle);
+  this.caseNumberNormalized = normalizeComparable(this.caseNumber);
+  this.sourceFileNormalized = normalizeComparable(this.sourceFile);
+});
 
 module.exports = mongoose.model("Case", caseSchema);

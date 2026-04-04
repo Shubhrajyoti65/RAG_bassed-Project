@@ -5,8 +5,67 @@ const { extractTextFromPDF } = require("../services/pdfService");
 const { analyzeCase } = require("../services/ragService");
 const { detectCategory } = require("../services/categoryService");
 const { saveHistory } = require("../services/historyService");
+const { toDeliverablePdfUrl } = require("../services/storageService");
 const Case = require("../models/Case");
 const authenticate = require("../middleware/authenticate");
+
+function normalizeComparable(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[_\-]+/g, " ")
+    .replace(/[^a-z0-9 ]+/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function resolveCaseReference(similarCase) {
+  const caseTitle = String(similarCase?.caseTitle || "").trim();
+  const caseNumber = String(similarCase?.caseNumber || "").trim();
+  const normalizedTitle = normalizeComparable(caseTitle);
+  const normalizedCaseNumber = normalizeComparable(caseNumber);
+
+  const query = { $or: [] };
+  if (normalizedCaseNumber) {
+    query.$or.push({ caseNumberNormalized: normalizedCaseNumber });
+  }
+  if (normalizedTitle) {
+    query.$or.push({ normalizedTitle });
+    query.$or.push({ sourceFileNormalized: normalizedTitle });
+  }
+
+  if (query.$or.length === 0) {
+    return null;
+  }
+
+  return Case.findOne(query).select("_id pdfUrl").lean();
+}
+
+async function enrichSimilarCases(similarCases) {
+  if (!Array.isArray(similarCases) || similarCases.length === 0) {
+    return [];
+  }
+
+  const links = new Array(similarCases.length).fill(null);
+
+  await Promise.all(
+    similarCases.map(async (item, index) => {
+      const linkedCase = await resolveCaseReference(item);
+      if (!linkedCase) {
+        item.caseId = item.caseId || null;
+        item.pdfUrl = item.pdfUrl || null;
+        return;
+      }
+
+      item.caseId = String(linkedCase._id);
+      item.pdfUrl = linkedCase.pdfUrl
+        ? toDeliverablePdfUrl(linkedCase.pdfUrl)
+        : null;
+      links[index] = { caseId: item.caseId, pdfUrl: item.pdfUrl };
+    })
+  );
+
+  return links;
+}
 
 // Route to analyze a legal case from either a PDF file upload or direct text input
 router.post(
@@ -59,6 +118,28 @@ router.post(
       }
       const language = req.body?.language || "English";
       const analysis = await analyzeCase(caseText, ragCategory, language);
+
+      try {
+        const englishPayload = analysis?.english || analysis;
+        const englishLinks = await enrichSimilarCases(
+          englishPayload?.similarCases
+        );
+
+        // Keep translated response in sync even if translated case titles differ.
+        if (analysis?.translated?.similarCases && Array.isArray(englishLinks)) {
+          analysis.translated.similarCases.forEach((item, index) => {
+            const link = englishLinks[index];
+            item.caseId = item.caseId || link?.caseId || null;
+            item.pdfUrl = item.pdfUrl || link?.pdfUrl || null;
+          });
+        }
+      } catch (enrichError) {
+        // Analysis should still return even if PDF enrichment fails.
+        console.warn(
+          `Failed to enrich similar cases with pdfUrl: ${enrichError.message}`
+        );
+      }
+
       try {
         await saveHistory({
           userId: req.user.id,
@@ -69,35 +150,6 @@ router.post(
       } catch (historyError) {
         // Analysis should not fail if history persistence fails.
         console.warn("Failed to save analysis history:", historyError.message);
-      }
-
-      // Enrich analysis with Cloudinary pdfUrls for similar cases
-      try {
-        const resultTypes = ["english", "translated"];
-        for (const type of resultTypes) {
-          const content = analysis[type] || (type === "english" ? analysis : null);
-          if (content && Array.isArray(content.similarCases)) {
-            // Perform all lookups in parallel for better performance
-            await Promise.all(content.similarCases.map(async (c) => {
-              const titleRegex = new RegExp(c.caseTitle.replace(/[_\-]/g, "[ _-]?"), "i");
-              const query = {
-                $or: [
-                  { caseTitle: { $regex: titleRegex } },
-                  { sourceFile: { $regex: titleRegex } }
-                ]
-              };
-              if (c.caseNumber) query.$or.push({ caseNumber: c.caseNumber });
-              
-              const dbCase = await Case.findOne(query).select("pdfUrl").lean();
-              if (dbCase?.pdfUrl) {
-                c.pdfUrl = dbCase.pdfUrl;
-              }
-            }));
-          }
-          if (!analysis[type]) break;
-        }
-      } catch (enrichError) {
-        console.warn("Analysis enrichment failed (non-critical):", enrichError.message);
       }
 
       res.json(analysis);

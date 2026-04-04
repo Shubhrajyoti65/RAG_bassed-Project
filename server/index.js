@@ -10,7 +10,6 @@ const healthRoute = require("./routes/healthRoute");
 const analyzeRoute = require("./routes/analyzeRoute");
 const authRoute = require("./routes/authRoute");
 const historyRoute = require("./routes/historyRoute");
-const caseRoute = require("./routes/caseRoute");
 const errorHandler = require("./middleware/errorHandler");
 const { connectMongo } = require("./services/mongoService");
 
@@ -29,7 +28,6 @@ app.use("/api", healthRoute);
 app.use("/api", authRoute);
 app.use("/api", analyzeRoute);
 app.use("/api", historyRoute);
-app.use("/api", caseRoute);
 
 app.use(errorHandler);
 

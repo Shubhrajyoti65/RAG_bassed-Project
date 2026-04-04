@@ -12,15 +12,6 @@ function loadSummaryCase(index) {
   }
 }
 
-async function fetchFullCase(title, caseNumber) {
-  const params = new URLSearchParams();
-  if (title) params.set("title", title);
-  if (caseNumber) params.set("caseNumber", caseNumber);
-  const res = await fetch(`/api/cases/lookup?${params.toString()}`);
-  if (!res.ok) throw new Error("Server error");
-  return res.json();
-}
-
 function ScoreBar({ score }) {
   const safe = Math.max(0, Math.min(100, Number(score) || 0));
   const color =
@@ -48,7 +39,6 @@ export default function CaseDetailPage() {
   const navigate = useNavigate();
 
   const [summaryCase, setSummaryCase] = useState(null);
-  const [pdfUrl, setPdfUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -60,21 +50,7 @@ export default function CaseDetailPage() {
       return;
     }
     setSummaryCase(sc);
-    
-    // 1. Immediately use the Cloudinary URL if it was already enriched during analysis
-    if (sc.pdfUrl) {
-      setPdfUrl(sc.pdfUrl);
-    }
-
-    // 2. Fetch full JSON content (facts/decision) and potentially the pdfUrl if missing
-    fetchFullCase(sc.caseTitle, sc.caseNumber)
-      .then((data) => {
-        if (data.pdfUrl && !sc.pdfUrl) {
-          setPdfUrl(data.pdfUrl);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    setLoading(false);
   }, [index]);
 
   if (loading) {
@@ -118,14 +94,37 @@ export default function CaseDetailPage() {
       <header className="app-card cdp-header">
         <div className="cdp-header-meta">
           {c?.year && <span className="cdp-year-badge">{c.year}</span>}
-          {pdfUrl
-            ? <span className="cdp-full-badge">📄 Original PDF</span>
-            : <span className="cdp-full-badge cdp-full-badge--warn">⚠ PDF not found</span>}
+          {c?.pdfUrl ? (
+            <span className="cdp-full-badge">PDF Available</span>
+          ) : (
+            <span className="cdp-full-badge cdp-full-badge--warn">PDF Unavailable</span>
+          )}
           {typeof c?.similarityScore === "number" && <ScoreBar score={c.similarityScore} />}
         </div>
         <h1 className="cdp-case-title">{displayTitle}</h1>
         {c?.caseNumber && <p className="cdp-case-number">Case No: {c.caseNumber}</p>}
       </header>
+
+      <section className="app-card cdp-section">
+        <div className="cdp-section-header">
+          <span className="cdp-section-icon">📄</span>
+          <h2 className="cdp-section-title">Original Judgment</h2>
+        </div>
+        {c?.pdfUrl ? (
+          <a
+            href={c.pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="app-button-primary cdp-bottom-btn"
+          >
+            Open Original Judgment
+          </a>
+        ) : (
+          <p className="cdp-body-text">
+            This case does not currently have a linked original PDF.
+          </p>
+        )}
+      </section>
 
       {/* AI parallels & decision — quick context before the PDF */}
       {(c?.keyParallels || c?.decision) && (
@@ -142,38 +141,6 @@ export default function CaseDetailPage() {
             </div>
           )}
         </section>
-      )}
-
-      {/* PDF viewer */}
-      {pdfUrl ? (
-        <section className="cdp-pdf-section">
-          <div className="cdp-pdf-toolbar">
-            <span className="cdp-pdf-label">📄 Original Judgment — High Court</span>
-            <a
-              href={pdfUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cdp-pdf-open-btn"
-            >
-              Open in new tab ↗
-            </a>
-          </div>
-          <iframe
-            src={pdfUrl}
-            className="cdp-pdf-frame"
-            title={displayTitle}
-            allow="fullscreen"
-          />
-        </section>
-      ) : (
-        <div className="cdp-not-indexed-notice">
-          <span>ℹ️</span>
-          <p>
-            The original PDF for this judgment is not yet available in our cloud library.
-            The AI-generated summary above provides the key points extracted during indexing.
-            We are continuously uploading full judgments to Cloudinary.
-          </p>
-        </div>
       )}
 
       {/* Disclaimer */}

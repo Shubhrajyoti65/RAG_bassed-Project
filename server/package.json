@@ -7,6 +7,8 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "import:cases": "node scripts/importCases.js",
+    "upload:existing-pdfs": "node scripts/uploadExistingPdfs.js",
+    "upload:existing-pdfs:force": "node scripts/uploadExistingPdfs.js --force",
     "rag:dev": "for /f \"tokens=1,* delims==\" %A in ('findstr /B /C:\"GEMINI_API_KEY=\" .env') do set GEMINI_API_KEY=%B && ..\\.venv\\Scripts\\python.exe -m uvicorn rag_service.app:app --app-dir .. --host 127.0.0.1 --port 8000"
   },
   "dependencies": {

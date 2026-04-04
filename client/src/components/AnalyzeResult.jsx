@@ -275,7 +275,7 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
 
                 {/* Case Action Buttons */}
                 <div className="mt-3 pt-3 border-t border-border/60 flex flex-wrap justify-end gap-2">
-                  {c.pdfUrl && (
+                  {c.pdfUrl ? (
                     <a
                       href={c.pdfUrl}
                       target="_blank"
@@ -287,6 +287,10 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
                     </a>
+                  ) : (
+                    <span className="inline-flex items-center font-label text-xs font-semibold text-text-secondary bg-surface border border-border px-3 py-1.5 rounded-lg">
+                      Original judgment unavailable
+                    </span>
                   )}
                   <button
                     type="button"
