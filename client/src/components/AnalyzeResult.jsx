@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Helper function to format duration in milliseconds to a human-readable string
 function formatDuration(ms) {
@@ -72,6 +73,15 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
     : userInput?.text
     ? userInput.text.replace(/^\[Category:[^\]]*\]\n?/, "").trim()
     : null;
+
+  const navigate = useNavigate();
+
+  // Persist similar cases to sessionStorage so CaseDetailPage can read them
+  useEffect(() => {
+    if (cases.length > 0) {
+      sessionStorage.setItem("nyaya_similar_cases", JSON.stringify(cases));
+    }
+  }, [cases]);
 
   return (
     <div className="max-w-5xl mx-auto space-y-5 animate-popIn">
@@ -262,6 +272,33 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
                     <p className="font-body text-sm text-text-secondary leading-relaxed">{c.decision}</p>
                   </div>
                 )}
+
+                {/* Case Action Buttons */}
+                <div className="mt-3 pt-3 border-t border-border/60 flex flex-wrap justify-end gap-2">
+                  {c.pdfUrl && (
+                    <a
+                      href={c.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 font-label text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-600 hover:text-white border border-sky-200 hover:border-sky-600 px-3 py-1.5 rounded-lg transition-all duration-200"
+                    >
+                      View Original Judgment
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/case/${i}`)}
+                    className="inline-flex items-center gap-1.5 font-label text-xs font-bold text-primary bg-primary/8 hover:bg-primary hover:text-white border border-primary/25 hover:border-primary px-3 py-1.5 rounded-lg transition-all duration-200"
+                  >
+                    Read Full Judgment
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             ))}
           </div>

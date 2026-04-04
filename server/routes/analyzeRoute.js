@@ -4,8 +4,9 @@ const upload = require("../middleware/upload");
 const { extractTextFromPDF } = require("../services/pdfService");
 const { analyzeCase } = require("../services/ragService");
 const { detectCategory } = require("../services/categoryService");
-const authenticate = require("../middleware/authenticate");
 const { saveHistory } = require("../services/historyService");
+const Case = require("../models/Case");
+const authenticate = require("../middleware/authenticate");
 
 // Route to analyze a legal case from either a PDF file upload or direct text input
 router.post(
@@ -68,6 +69,35 @@ router.post(
       } catch (historyError) {
         // Analysis should not fail if history persistence fails.
         console.warn("Failed to save analysis history:", historyError.message);
+      }
+
+      // Enrich analysis with Cloudinary pdfUrls for similar cases
+      try {
+        const resultTypes = ["english", "translated"];
+        for (const type of resultTypes) {
+          const content = analysis[type] || (type === "english" ? analysis : null);
+          if (content && Array.isArray(content.similarCases)) {
+            // Perform all lookups in parallel for better performance
+            await Promise.all(content.similarCases.map(async (c) => {
+              const titleRegex = new RegExp(c.caseTitle.replace(/[_\-]/g, "[ _-]?"), "i");
+              const query = {
+                $or: [
+                  { caseTitle: { $regex: titleRegex } },
+                  { sourceFile: { $regex: titleRegex } }
+                ]
+              };
+              if (c.caseNumber) query.$or.push({ caseNumber: c.caseNumber });
+              
+              const dbCase = await Case.findOne(query).select("pdfUrl").lean();
+              if (dbCase?.pdfUrl) {
+                c.pdfUrl = dbCase.pdfUrl;
+              }
+            }));
+          }
+          if (!analysis[type]) break;
+        }
+      } catch (enrichError) {
+        console.warn("Analysis enrichment failed (non-critical):", enrichError.message);
       }
 
       res.json(analysis);
