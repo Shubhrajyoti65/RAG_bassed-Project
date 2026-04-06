@@ -850,6 +850,21 @@ body {
   color: var(--text-secondary);
   line-height: 1.58;
   margin: 0 0 0.72rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.judgment-ticker-state {
+  margin: 0.45rem 0 0.7rem;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.judgment-ticker-state-muted {
+  color: color-mix(in srgb, var(--text-secondary) 90%, transparent);
 }
 
 /* Progress bar */
@@ -958,6 +973,12 @@ body {
   color: inherit;
   border-radius: 1.1rem;
   transition: transform 220ms ease, box-shadow 220ms ease;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
 }
 
 .judgment-ticker-card-link:hover .judgment-ticker-card {
@@ -980,6 +1001,12 @@ body {
 .judgment-ticker-card-link:hover .judgment-ticker-read-more {
   opacity: 1;
   text-decoration: underline;
+}
+
+.judgment-ticker-ctrl-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* ─────────────────────────────────────────────
