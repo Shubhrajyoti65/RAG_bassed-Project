@@ -1,10 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from pydantic import BaseModel
 
 try:
-    from rag_service.rag_pipeline import analyze_case_text, build_default_query_config
+    from rag_service.rag_pipeline import analyze_case_text, build_default_query_config, transcribe_audio
 except ModuleNotFoundError:
-    from rag_pipeline import analyze_case_text, build_default_query_config
+    from rag_pipeline import analyze_case_text, build_default_query_config, transcribe_audio
 
 app = FastAPI(title="Nyaay Sahayak RAG Service")
 
@@ -67,3 +67,56 @@ def analyze(payload: AnalyzeRequest):
         raise HTTPException(status_code=500, detail=f"RAG analysis failed: {error}") from error
 
     return result
+
+
+# FastAPI endpoint to handle voice queries (auto-detect language + RAG)
+@app.post("/analyze-voice")
+async def analyze_voice(file: UploadFile = File(...), category: str = "general"):
+    """
+    Receives an audio file, transcribes it, detects the language, 
+    and then performs a legal RAG analysis.
+    """
+    if not file:
+        raise HTTPException(status_code=400, detail="Audio file is required")
+    
+    # Read file bytes
+    try:
+        audio_bytes = await file.read()
+        mime_type = file.content_type or "audio/webm"
+    except Exception as read_error:
+        raise HTTPException(status_code=400, detail=f"Failed to read audio file: {read_error}")
+    
+    try:
+        # Load base configuration
+        config = build_default_query_config(category)
+        
+        # 1. Automatic Transcription and Language Detection using Gemini 1.5
+        transcription_text, detected_lang = transcribe_audio(audio_bytes, mime_type, config)
+        
+        if not transcription_text.strip() or len(transcription_text) < 5:
+            raise HTTPException(
+                status_code=400, 
+                detail="Voice input was too short or could not be transcribed."
+            )
+            
+        # 2. Execute the RAG Pipeline with the detected context
+        # We manually update the config with the detected language
+        config.output_language = detected_lang
+        
+        # Optional: Enrich text for property category as in the text flow
+        text_to_analyze = enrich_property_query(transcription_text, category)
+        
+        result = analyze_case_text(text_to_analyze, config)
+        
+        # Append metadata about the voice processing to the response
+        result["transcription"] = transcription_text
+        result["detectedLanguage"] = detected_lang
+        
+        return result
+    except FileNotFoundError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except Exception as error:
+        print(f"Voice analysis pipeline failed: {error}")
+        raise HTTPException(status_code=500, detail=f"Voice analysis failed: {error}")

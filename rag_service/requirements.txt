@@ -6,3 +6,6 @@ sentence-transformers
 fastapi
 uvicorn
 pydantic
+google-generativeai
+pydub
+python-multipart

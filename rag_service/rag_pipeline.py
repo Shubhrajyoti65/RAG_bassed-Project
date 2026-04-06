@@ -15,12 +15,13 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_google_genai import ChatGoogleGenerativeAI
 from sentence_transformers import SentenceTransformer
+import google.generativeai as genai
 
 # Phase 2 chunking configuration (required range: 500-800, overlap: 100)
 CHUNK_SIZE = 700
 CHUNK_OVERLAP = 100
 EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
-GENERATION_MODEL_NAME = "gemini-2.5-flash"
+GENERATION_MODEL_NAME = "models/gemini-2.5-flash"
 DEFAULT_TOP_K = 5
 
 _EMBEDDING_FUNCTION: SentenceTransformerEmbeddingFunction | None = None
@@ -90,6 +91,9 @@ class QueryConfig:
     generation_model: str = GENERATION_MODEL_NAME
     top_k: int = DEFAULT_TOP_K
     output_language: str = "English"
+    temperature: float = 0.0
+    top_p: float = 0.95
+    top_k_gen: int = 40
 
 
 # Custom embedding class using SentenceTransformers for high-quality semantic vector generation
@@ -343,11 +347,21 @@ def get_llm(config: QueryConfig) -> ChatGoogleGenerativeAI:
     if cached is not None:
         return cached
 
-    llm = ChatGoogleGenerativeAI(
-        model=config.generation_model,
-        temperature=0,
-        google_api_key=config.gemini_api_key,
-    )
+    try:
+        llm = ChatGoogleGenerativeAI(
+            model=config.generation_model,
+            google_api_key=config.gemini_api_key,
+            temperature=config.temperature,
+            top_p=config.top_p,
+            top_k=config.top_k_gen,
+        )
+    except Exception as e:
+        print(f"LLM Initialization failed: {e}")
+        # Fallback to a very simple initialization if special params fail
+        llm = ChatGoogleGenerativeAI(
+            model=config.generation_model,
+            google_api_key=config.gemini_api_key,
+        )
     _LLM_CACHE[cache_key] = llm
     return llm
 
@@ -590,6 +604,56 @@ def _read_env_file_value(env_file: Path, key: str) -> str:
         if raw.startswith(prefix):
             return raw[len(prefix) :].strip().strip('"').strip("'")
     return ""
+
+
+def transcribe_audio(audio_bytes: bytes, mime_type: str, config: QueryConfig) -> tuple[str, str]:
+    """
+    Uses Gemini 1.5 to transcribe audio and detect the language.
+    Returns (transcribed_text, detected_language_name).
+    """
+    # Set up the Generative AI client
+    genai.configure(api_key=config.gemini_api_key)
+    model = genai.GenerativeModel("models/gemini-2.5-flash")
+    
+    prompt = """
+    Transcribe the following audio exactly. 
+    Also, identify the spoken language from this list: 
+    [English, Hindi, Marathi, Bengali, Tamil, Telugu, Gujarati, Kannada, Malayalam, Odia, Punjabi, Assamese, Urdu].
+    
+    Return the result ONLY as a JSON object with two fields:
+    - "text": The full transcription in the original script.
+    - "language": The language name from the provided list (e.g. "Hindi", "Tamil", "English").
+    
+    Return ONLY the JSON. No conversational filler.
+    """
+    
+    try:
+        response = model.generate_content([
+            prompt,
+            {
+                "mime_type": mime_type,
+                "data": audio_bytes
+            }
+        ])
+        
+        result = parse_model_json(str(response.text))
+        text = str(result.get("text", "")).strip()
+        lang = str(result.get("language", "English")).strip()
+        
+        # Simple normalization to match dropdown
+        lang_map = {
+            "hindi": "Hindi", "tamil": "Tamil", "telugu": "Telugu", 
+            "bengali": "Bengali", "marathi": "Marathi", "gujarati": "Gujarati",
+            "kannada": "Kannada", "malayalam": "Malayalam", "odia": "Odia",
+            "punjabi": "Punjabi", "assamese": "Assamese", "urdu": "Urdu",
+            "english": "English"
+        }
+        lang = lang_map.get(lang.lower(), lang)
+        
+        return text, lang
+    except Exception as e:
+        print(f"Audio transcription failed: {e}")
+        raise ValueError(f"Failed to transcribe audio or detect language: {e}")
 
 
 def build_default_query_config(case_category: str = "general") -> QueryConfig:
