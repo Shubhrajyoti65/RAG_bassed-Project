@@ -45,6 +45,9 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
   const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [layoutName, setLayoutName] = useState("default");
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [recognition, setRecognition] = useState(null);
   const keyboardRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -112,6 +115,76 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
     setFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      setMediaRecorder(recorder);
+      const chunks = [];
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(chunks, { type: "audio/webm" });
+        await onAnalyze({ voiceFile: audioBlob, category: selectedCategory });
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      // Set up Live Typing (Web Speech API)
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const rec = new SpeechRecognition();
+        rec.continuous = true;
+        rec.interimResults = true;
+        
+        // Language mapping for live typing
+        const langMap = {
+          "English": "en-US", "Hindi": "hi-IN", "Marathi": "mr-IN", 
+          "Bengali": "bn-IN", "Tamil": "ta-IN", "Telugu": "te-IN", 
+          "Gujarati": "gu-IN", "Kannada": "kn-IN", "Malayalam": "ml-IN", 
+          "Odia": "or-IN", "Punjabi": "pa-IN", "Assamese": "as-IN", "Urdu": "ur-PK"
+        };
+        rec.lang = langMap[selectedLanguage] || "en-US";
+        
+        let localFinalTranscript = "";
+        
+        rec.onstart = () => console.log("Live typing started...");
+        rec.onerror = (event) => console.error("Live typing error:", event.error);
+        
+        rec.onresult = (event) => {
+          let interimTranscript = "";
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            const transcriptChunk = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              localFinalTranscript += transcriptChunk;
+            } else {
+              interimTranscript += transcriptChunk;
+            }
+          }
+          // Direct state update for the textarea
+          setText(localFinalTranscript + interimTranscript);
+        };
+        
+        rec.start();
+        setRecognition(rec);
+      }
+
+      recorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Microphone access error:", err);
+      alert("Could not access microphone. Please check permissions.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      mediaRecorder.stop();
+    }
+    if (recognition) {
+      recognition.stop();
+    }
+    setIsRecording(false);
+  };
 
 // Submits the case text or file for legal analysis
   async function handleSubmit(e) {
@@ -190,15 +263,43 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
         </div>
       </div>
 
-      <textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        disabled={loading || Boolean(file)}
-        placeholder={selectedLanguage === "English" 
-            ? "Explain your situation here. Use your own words..."
-            : `Explain your situation here. You may write in ${selectedLanguage.split(" ")[0]}...`}
-        className={`w-full h-40 app-input ui-border-highlight px-4 py-3 text-base leading-relaxed transition-all duration-200 ${!file && charCount > 0 && !meetsMinimum ? 'border-amber-400/60 focus:border-amber-400' : ''}`}
-      />
+      <div className="relative group">
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          disabled={loading || Boolean(file) || isRecording}
+          placeholder={isRecording 
+              ? "Listening to your voice... Speak clearly." 
+              : selectedLanguage === "English" 
+                  ? "Explain your situation here. Use your own words..."
+                  : `Explain your situation here. You may write in ${selectedLanguage.split(" ")[0]}...`}
+          className={`w-full h-40 app-input ui-border-highlight px-4 py-3 text-base leading-relaxed transition-all duration-200 ${!file && charCount > 0 && !meetsMinimum ? 'border-amber-400/60 focus:border-amber-400' : ''} ${isRecording ? 'ring-2 ring-red-500/50 border-red-500/50' : ''}`}
+        />
+        
+        {/* Voice Input Button */}
+        {!file && !loading && (
+          <button
+            type="button"
+            onClick={isRecording ? stopRecording : startRecording}
+            className={`absolute bottom-3 right-3 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
+              isRecording 
+                ? "bg-red-500 text-white animate-pulse scale-110" 
+                : "bg-primary/10 text-primary hover:bg-primary hover:text-white"
+            }`}
+            title={isRecording ? "Stop Recording" : "Ask by Voice (Auto-Language Detection)"}
+          >
+            {isRecording ? (
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <rect x="6" y="6" width="12" height="12" rx="2" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+            )}
+          </button>
+        )}
+      </div>
 
       {/* Character counter -- only shown when typing text (not uploading PDF) */}
       {!file && (

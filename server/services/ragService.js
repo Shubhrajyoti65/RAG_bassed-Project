@@ -1,5 +1,9 @@
+const axios = require("axios");
+const FormData = require("form-data");
 const PYTHON_RAG_URL =
   process.env.PYTHON_RAG_URL || "http://localhost:8000/analyze";
+const PYTHON_VOICE_URL = 
+  process.env.PYTHON_VOICE_URL || "http://localhost:8000/analyze-voice";
 
 // Sends case text to the Python RAG service for analysis
 async function analyzeCase(
@@ -59,4 +63,37 @@ function validateAnalysis(analysis) {
   }
 }
 
-module.exports = { analyzeCase };
+async function analyzeVoice(audioBuffer, category = "general") {
+  if (!audioBuffer) {
+    throw new Error("Audio buffer is required");
+  }
+
+  const form = new FormData();
+  // Using a blob-like structure for the form data to handle the buffer
+  form.append("file", audioBuffer, {
+    filename: "voice_query.webm",
+    contentType: "audio/webm",
+  });
+  form.append("category", category);
+
+  try {
+    const response = await axios.post(PYTHON_VOICE_URL, form, {
+      headers: {
+        ...form.getHeaders(),
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+    });
+
+    validateAnalysis(response.data);
+    return response.data;
+  } catch (error) {
+    const message =
+      error.response?.data?.detail ||
+      error.response?.data?.error ||
+      error.message;
+    throw new Error(`Voice analysis failed: ${message}`);
+  }
+}
+
+module.exports = { analyzeCase, analyzeVoice };

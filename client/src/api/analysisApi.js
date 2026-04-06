@@ -2,6 +2,7 @@
 export async function submitAnalysis({
   text,
   file,
+  voiceFile,
   category,
   language,
   token,
@@ -19,6 +20,18 @@ export async function submitAnalysis({
       formData.append("language", language);
     }
     response = await fetch("/api/analyze", {
+      method: "POST",
+      headers: authHeaders,
+      body: formData,
+    });
+  } else if (voiceFile) {
+    const formData = new FormData();
+    formData.append("file", voiceFile);
+    if (category) {
+      formData.append("category", category);
+    }
+    // Language is auto-detected on the backend for voice
+    response = await fetch("/api/analyze-voice", {
       method: "POST",
       headers: authHeaders,
       body: formData,

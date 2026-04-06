@@ -59,8 +59,12 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
   const duration = formatDuration(analysisTimeMs);
 
   const isFileInput = userInput?.file instanceof File;
+  const isVoiceInput = userInput?.voiceFile instanceof Blob;
+
   const inputLabel = isFileInput
     ? userInput.file.name
+    : isVoiceInput
+    ? result?.transcription || "Voice input processed"
     : userInput?.text
     ? userInput.text.replace(/^\[Category:[^\]]*\]\n?/, "").trim()
     : null;
@@ -103,6 +107,10 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
+              ) : isVoiceInput ? (
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
               ) : (
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -111,7 +119,7 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
             </div>
             <div className="min-w-0">
               <p className="font-label text-[11px] uppercase tracking-widest font-bold text-white/70 mb-1">
-                {isFileInput ? "Uploaded Document" : "Your Submission"}
+                {isFileInput ? "Uploaded Document" : isVoiceInput ? "Voice Query" : "Your Submission"}
               </p>
               <p className="font-body text-sm text-white leading-relaxed line-clamp-5">
                 {inputLabel}

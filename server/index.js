@@ -8,6 +8,7 @@ const cors = require("cors");
 const config = require("./config");
 const healthRoute = require("./routes/healthRoute");
 const analyzeRoute = require("./routes/analyzeRoute");
+const analyzeVoiceRoute = require("./routes/analyzeVoiceRoute");
 const authRoute = require("./routes/authRoute");
 const historyRoute = require("./routes/historyRoute");
 const livelawRoute = require("./routes/livelawRoute");
@@ -28,6 +29,7 @@ app.use(express.json({ limit: "5mb" }));
 app.use("/api", healthRoute);
 app.use("/api", authRoute);
 app.use("/api", analyzeRoute);
+app.use("/api", analyzeVoiceRoute);
 app.use("/api", historyRoute);
 app.use("/api", livelawRoute);
 

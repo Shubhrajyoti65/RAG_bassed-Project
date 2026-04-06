@@ -9,7 +9,7 @@ export function useAnalysis() {
   const [analysisTimeMs, setAnalysisTimeMs] = useState(null);
 
   // Executes the analysis by calling the API and tracking performance/loading states
-  async function analyze({ text, file, category, language, token }) {
+  async function analyze({ text, file, voiceFile, category, language, token }) {
     const startedAt = performance.now();
     setLoading(true);
     setError(null);
@@ -20,6 +20,7 @@ export function useAnalysis() {
       const data = await submitAnalysis({
         text,
         file,
+        voiceFile,
         category,
         language,
         token,

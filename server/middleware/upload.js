@@ -9,6 +9,14 @@ const allowedPdfMimeTypes = new Set([
   "text/pdf",
 ]);
 
+const allowedAudioMimeTypes = new Set([
+  "audio/webm",
+  "audio/ogg",
+  "audio/wav",
+  "audio/mp3",
+  "audio/mpeg",
+]);
+
 // Configuration for file uploads using Multer, restricted to PDF files
 const upload = multer({
   storage,
@@ -16,11 +24,12 @@ const upload = multer({
   fileFilter: (req, file, cb) => {
     const mime = String(file.mimetype || "").toLowerCase();
     const hasPdfExtension = /\.pdf$/i.test(String(file.originalname || ""));
+    const isAudio = mime.startsWith("audio/");
 
-    if (allowedPdfMimeTypes.has(mime) || hasPdfExtension) {
+    if (allowedPdfMimeTypes.has(mime) || hasPdfExtension || allowedAudioMimeTypes.has(mime) || isAudio) {
       cb(null, true);
     } else {
-      cb(new Error("Only PDF files are accepted"), false);
+      cb(new Error("Only PDF and common audio files are accepted"), false);
     }
   },
 });
