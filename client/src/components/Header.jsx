@@ -286,7 +286,7 @@ export default function Header({ user, onLogout, isDark, onToggleTheme, onNewAna
                       <button
                         type="button"
                         onClick={() => { setProfileMenuOpen(false); onLogout(); }}
-                        className="w-full text-left font-label text-sm px-3 py-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                        className="w-full text-left font-label text-sm px-3 py-2 rounded-xl bg-red-50 text-red-600 border border-red-200/80 hover:bg-red-600 hover:text-white hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/60"
                       >
                         Logout
                       </button>

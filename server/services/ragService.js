@@ -2,7 +2,7 @@ const axios = require("axios");
 const FormData = require("form-data");
 const PYTHON_RAG_URL =
   process.env.PYTHON_RAG_URL || "http://localhost:8000/analyze";
-const PYTHON_VOICE_URL = 
+const PYTHON_VOICE_URL =
   process.env.PYTHON_VOICE_URL || "http://localhost:8000/analyze-voice";
 
 // Sends case text to the Python RAG service for analysis

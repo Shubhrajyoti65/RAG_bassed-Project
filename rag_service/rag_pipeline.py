@@ -88,6 +88,8 @@ class IngestConfig:
 class QueryConfig:
     index_dir: Path
     gemini_api_key: str
+    gemini_api_key_voice: str | None = None
+    gemini_api_key_translation: str | None = None
     generation_model: str = GENERATION_MODEL_NAME
     top_k: int = DEFAULT_TOP_K
     output_language: str = "English"
@@ -223,7 +225,7 @@ def chunk_documents(documents: list[Document]) -> list[Document]:
 
 
 def translate_text(text: str, target_lang: str, config: QueryConfig) -> str:
-    llm = get_llm(config)
+    llm = get_llm(config, purpose="translation")
     prompt = ChatPromptTemplate.from_template("Translate the following text into {target_lang}. Return ONLY the translation, nothing else.\n\nText:\n{text}")
     try:
         resp = llm.invoke(prompt.format_messages(target_lang=target_lang, text=text))
@@ -233,7 +235,7 @@ def translate_text(text: str, target_lang: str, config: QueryConfig) -> str:
         return text
 
 def translate_json(data: dict, target_lang: str, config: QueryConfig) -> dict:
-    llm = get_llm(config)
+    llm = get_llm(config, purpose="translation")
     prompt = ChatPromptTemplate.from_template(
         "You are an expert legal translator. Your task is to translate the text content of the provided JSON object into {target_lang}.\n"
         "RULES:\n"
@@ -340,9 +342,22 @@ def get_embedding_function() -> SentenceTransformerEmbeddingFunction:
     return _EMBEDDING_FUNCTION
 
 
+# Chooses the Gemini API key for the requested pipeline stage.
+def select_gemini_api_key(config: QueryConfig, purpose: str = "generation") -> str:
+    if purpose == "voice":
+        return str(config.gemini_api_key_voice or config.gemini_api_key or "").strip()
+    if purpose == "translation":
+        return str(config.gemini_api_key_translation or config.gemini_api_key or "").strip()
+    return str(config.gemini_api_key or "").strip()
+
+
 # Cached accessor for the Google Gemini LLM instance
-def get_llm(config: QueryConfig) -> ChatGoogleGenerativeAI:
-    cache_key = (config.generation_model, config.gemini_api_key)
+def get_llm(config: QueryConfig, purpose: str = "generation") -> ChatGoogleGenerativeAI:
+    api_key = select_gemini_api_key(config, purpose)
+    if not api_key:
+        raise ValueError(f"Gemini API key is required for {purpose}")
+
+    cache_key = (config.generation_model, api_key)
     cached = _LLM_CACHE.get(cache_key)
     if cached is not None:
         return cached
@@ -350,7 +365,7 @@ def get_llm(config: QueryConfig) -> ChatGoogleGenerativeAI:
     try:
         llm = ChatGoogleGenerativeAI(
             model=config.generation_model,
-            google_api_key=config.gemini_api_key,
+            google_api_key=api_key,
             temperature=config.temperature,
             top_p=config.top_p,
             top_k=config.top_k_gen,
@@ -360,7 +375,7 @@ def get_llm(config: QueryConfig) -> ChatGoogleGenerativeAI:
         # Fallback to a very simple initialization if special params fail
         llm = ChatGoogleGenerativeAI(
             model=config.generation_model,
-            google_api_key=config.gemini_api_key,
+            google_api_key=api_key,
         )
     _LLM_CACHE[cache_key] = llm
     return llm
@@ -612,7 +627,10 @@ def transcribe_audio(audio_bytes: bytes, mime_type: str, config: QueryConfig) ->
     Returns (transcribed_text, detected_language_name).
     """
     # Set up the Generative AI client
-    genai.configure(api_key=config.gemini_api_key)
+    voice_key = select_gemini_api_key(config, purpose="voice")
+    if not voice_key:
+        raise ValueError("Gemini API key is required for voice transcription")
+    genai.configure(api_key=voice_key)
     model = genai.GenerativeModel("models/gemini-2.5-flash")
     
     prompt = """
@@ -661,12 +679,30 @@ def build_default_query_config(case_category: str = "general") -> QueryConfig:
     root_dir = service_dir.parent
     server_env_file = root_dir / "server" / ".env"
 
-    api_key = os.getenv("GEMINI_API_KEY", "").strip() or _read_env_file_value(
+    default_api_key = os.getenv("GEMINI_API_KEY", "").strip() or _read_env_file_value(
         server_env_file, "GEMINI_API_KEY"
     )
 
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY is required")
+    rag_api_key = os.getenv("GEMINI_API_KEY_RAG", "").strip() or _read_env_file_value(
+        server_env_file, "GEMINI_API_KEY_RAG"
+    )
+    if not rag_api_key:
+        rag_api_key = default_api_key
+
+    voice_api_key = os.getenv("GEMINI_API_KEY_VOICE", "").strip() or _read_env_file_value(
+        server_env_file, "GEMINI_API_KEY_VOICE"
+    )
+    if not voice_api_key:
+        voice_api_key = rag_api_key
+
+    translation_api_key = os.getenv("GEMINI_API_KEY_TRANSLATION", "").strip() or _read_env_file_value(
+        server_env_file, "GEMINI_API_KEY_TRANSLATION"
+    )
+    if not translation_api_key:
+        translation_api_key = rag_api_key
+
+    if not rag_api_key:
+        raise ValueError("GEMINI_API_KEY or GEMINI_API_KEY_RAG is required")
 
     generation_model = os.getenv("GENERATION_MODEL", "").strip() or _read_env_file_value(
         server_env_file, "GENERATION_MODEL"
@@ -677,7 +713,9 @@ def build_default_query_config(case_category: str = "general") -> QueryConfig:
 
     return QueryConfig(
         index_dir=service_dir / "faiss_index" / case_category,
-        gemini_api_key=api_key,
+        gemini_api_key=rag_api_key,
+        gemini_api_key_voice=voice_api_key,
+        gemini_api_key_translation=translation_api_key,
         generation_model=generation_model,
         top_k=DEFAULT_TOP_K,
     )

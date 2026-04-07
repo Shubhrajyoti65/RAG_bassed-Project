@@ -46,8 +46,8 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
   const [showKeyboard, setShowKeyboard] = useState(false);
   const [layoutName, setLayoutName] = useState("default");
   const [isRecording, setIsRecording] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState(null);
   const [recognition, setRecognition] = useState(null);
+  const [voiceStatusMessage, setVoiceStatusMessage] = useState("");
   const keyboardRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -116,70 +116,72 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
-  const startRecording = async () => {
+  const startRecording = () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-      setMediaRecorder(recorder);
-      const chunks = [];
-      recorder.ondataavailable = (e) => chunks.push(e.data);
-      recorder.onstop = async () => {
-        const audioBlob = new Blob(chunks, { type: "audio/webm" });
-        await onAnalyze({ voiceFile: audioBlob, category: selectedCategory });
-        stream.getTracks().forEach((track) => track.stop());
-      };
-
-      // Set up Live Typing (Web Speech API)
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const rec = new SpeechRecognition();
-        rec.continuous = true;
-        rec.interimResults = true;
-        
-        // Language mapping for live typing
-        const langMap = {
-          "English": "en-US", "Hindi": "hi-IN", "Marathi": "mr-IN", 
-          "Bengali": "bn-IN", "Tamil": "ta-IN", "Telugu": "te-IN", 
-          "Gujarati": "gu-IN", "Kannada": "kn-IN", "Malayalam": "ml-IN", 
-          "Odia": "or-IN", "Punjabi": "pa-IN", "Assamese": "as-IN", "Urdu": "ur-PK"
-        };
-        rec.lang = langMap[selectedLanguage] || "en-US";
-        
-        let localFinalTranscript = "";
-        
-        rec.onstart = () => console.log("Live typing started...");
-        rec.onerror = (event) => console.error("Live typing error:", event.error);
-        
-        rec.onresult = (event) => {
-          let interimTranscript = "";
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            const transcriptChunk = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-              localFinalTranscript += transcriptChunk;
-            } else {
-              interimTranscript += transcriptChunk;
-            }
-          }
-          // Direct state update for the textarea
-          setText(localFinalTranscript + interimTranscript);
-        };
-        
-        rec.start();
-        setRecognition(rec);
+      if (!SpeechRecognition) {
+        alert("Live voice transcription is not supported in this browser. Please type your query.");
+        return;
       }
 
-      recorder.start();
-      setIsRecording(true);
+      const rec = new SpeechRecognition();
+      rec.continuous = true;
+      rec.interimResults = true;
+
+      // Language mapping for live typing
+      const langMap = {
+        "English": "en-US", "Hindi": "hi-IN", "Marathi": "mr-IN",
+        "Bengali": "bn-IN", "Tamil": "ta-IN", "Telugu": "te-IN",
+        "Gujarati": "gu-IN", "Kannada": "kn-IN", "Malayalam": "ml-IN",
+        "Odia": "or-IN", "Punjabi": "pa-IN", "Assamese": "as-IN", "Urdu": "ur-PK"
+      };
+      rec.lang = langMap[selectedLanguage] || "en-US";
+
+      const existingText = text.trim();
+      const transcriptPrefix = existingText ? `${existingText} ` : "";
+      let localFinalTranscript = "";
+
+      rec.onstart = () => {
+        setIsRecording(true);
+        setVoiceStatusMessage("Listening... Tap mic again to stop.");
+      };
+
+      rec.onerror = (event) => {
+        console.error("Live typing error:", event.error);
+        setIsRecording(false);
+        setVoiceStatusMessage("Voice input had an issue. You can edit the text and continue.");
+      };
+
+      rec.onresult = (event) => {
+        let interimTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const transcriptChunk = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            localFinalTranscript += transcriptChunk;
+          } else {
+            interimTranscript += transcriptChunk;
+          }
+        }
+        setText(`${transcriptPrefix}${localFinalTranscript}${interimTranscript}`.trim());
+      };
+
+      rec.onend = () => {
+        setIsRecording(false);
+        setRecognition(null);
+        setVoiceStatusMessage("Recording stopped. Review/edit the transcript, then click Analyze Situation.");
+      };
+
+      setRecognition(rec);
+      rec.start();
     } catch (err) {
       console.error("Microphone access error:", err);
       alert("Could not access microphone. Please check permissions.");
+      setIsRecording(false);
+      setVoiceStatusMessage("");
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-      mediaRecorder.stop();
-    }
     if (recognition) {
       recognition.stop();
     }
@@ -286,7 +288,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
                 ? "bg-red-500 text-white animate-pulse scale-110" 
                 : "bg-primary/10 text-primary hover:bg-primary hover:text-white"
             }`}
-            title={isRecording ? "Stop Recording" : "Ask by Voice (Auto-Language Detection)"}
+            title={isRecording ? "Stop Recording" : "Start Voice Input"}
           >
             {isRecording ? (
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -330,6 +332,12 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
             />
           </div>
         </div>
+      )}
+
+      {!file && voiceStatusMessage && (
+        <p className={`mt-2 px-1 font-label text-xs ${isRecording ? "text-red-500" : "text-text-secondary"}`}>
+          {voiceStatusMessage}
+        </p>
       )}
 
       {/* Keyboard Toggle */}

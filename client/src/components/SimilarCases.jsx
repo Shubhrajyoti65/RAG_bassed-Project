@@ -2,6 +2,8 @@
 export default function SimilarCases({ cases }) {
   if (!cases || cases.length === 0) return null;
 
+  const formatCaseTitle = (title) => String(title || "").replace(/_+/g, " ").trim();
+
   return (
     <div className="space-y-4 mt-6">
       <div className="flex items-center justify-between pb-3">
@@ -22,7 +24,7 @@ export default function SimilarCases({ cases }) {
             <div className="absolute top-0 left-0 right-0 h-0.5 gradient-primary-bg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
             <div className="flex items-start justify-between gap-3 mb-4">
-              <h4 className="font-headline text-sm font-bold text-text-primary leading-snug">{c.caseTitle}</h4>
+              <h4 className="font-headline text-sm font-bold text-text-primary leading-snug">{formatCaseTitle(c.caseTitle)}</h4>
               <div className="shrink-0 flex flex-col items-end">
                 <span className="font-label text-[10px] font-extrabold uppercase tracking-widest text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-950/40 px-2.5 py-1 rounded-lg border border-green-200 dark:border-green-800">
                   {c.similarityScore}% Match

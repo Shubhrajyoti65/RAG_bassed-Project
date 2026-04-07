@@ -6,6 +6,10 @@ function formatDuration(ms) {
   return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(2)} s`;
 }
 
+function formatCaseTitle(title) {
+  return String(title || "").replace(/_+/g, " ").trim();
+}
+
 /** Compact vertical similarity score widget — sits top-right of each case card */
 // Sub-component to display a visual similarity score for case matches
 function SimilarityBar({ score }) {
@@ -234,7 +238,7 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
                     {i + 1}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-label text-lg font-semibold text-text-primary leading-snug">{c.caseTitle}</p>
+                    <p className="font-label text-lg font-semibold text-text-primary leading-snug line-clamp-2">{formatCaseTitle(c.caseTitle)}</p>
                     <p className="font-label text-sm text-text-secondary mt-0.5">
                       {c.year}{c.caseNumber ? ` · ${c.caseNumber}` : ""}
                     </p>
@@ -270,7 +274,7 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
                       href={c.pdfUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 font-label text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-600 hover:text-white border border-sky-200 hover:border-sky-600 px-3 py-1.5 rounded-lg transition-all duration-200"
+                      className="inline-flex items-center gap-1.5 font-label text-xs font-bold text-blue-800 bg-blue-200 hover:bg-blue-500 hover:text-white border border-blue-300 hover:border-blue-600 px-3 py-1.5 rounded-lg transition-all duration-200"
                     >
                       View Original Judgment
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -278,7 +282,7 @@ export default function AnalyzeResult({ result, analysisTimeMs, userInput, onRes
                       </svg>
                     </a>
                   ) : (
-                    <span className="inline-flex items-center font-label text-xs font-semibold text-text-secondary bg-surface border border-border px-3 py-1.5 rounded-lg">
+                    <span className="inline-flex items-center font-label text-xs font-semibold text-blue-500 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg">
                       Original judgment unavailable
                     </span>
                   )}

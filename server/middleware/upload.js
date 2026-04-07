@@ -26,7 +26,12 @@ const upload = multer({
     const hasPdfExtension = /\.pdf$/i.test(String(file.originalname || ""));
     const isAudio = mime.startsWith("audio/");
 
-    if (allowedPdfMimeTypes.has(mime) || hasPdfExtension || allowedAudioMimeTypes.has(mime) || isAudio) {
+    if (
+      allowedPdfMimeTypes.has(mime) ||
+      hasPdfExtension ||
+      allowedAudioMimeTypes.has(mime) ||
+      isAudio
+    ) {
       cb(null, true);
     } else {
       cb(new Error("Only PDF and common audio files are accepted"), false);
