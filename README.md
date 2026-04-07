@@ -14,8 +14,13 @@ The frontend talks to the Node server for auth, history, and upload handling. Th
 - Google sign-in
 - Forgot password with real email OTP delivery (SMTP)
 - Protected case analysis from text or PDF
+- Voice query support with live transcription
+- Voice flow now allows transcript review/edit before starting analysis
+- Automatic language detection for voice input
+- Multi-language output with translated analysis when applicable
 - User-specific analysis history
 - Landing page with rotating featured legal updates
+- Improved analysis UI for similar cases (cleaner titles and improved judgment action styling)
 
 ## 2. Project Structure
 
@@ -35,14 +40,23 @@ JWT_EXPIRES_IN=7d
 MONGODB_URI=mongodb://127.0.0.1:27017
 MONGODB_DB_NAME=nyayasahayak
 
-# Used by rag_service
+# Gemini keys used by rag_service (single-key mode)
 GEMINI_API_KEY=your_gemini_api_key_here
+
+# Optional split-key mode (recommended when quota is exhausted quickly)
+# If set, RAG generation uses this key
+GEMINI_API_KEY_RAG=your_gemini_rag_key
+# If set, voice transcription uses this key
+GEMINI_API_KEY_VOICE=your_gemini_voice_key
+# If set, translation steps use this key
+GEMINI_API_KEY_TRANSLATION=your_gemini_translation_key
 
 # Google auth
 GOOGLE_CLIENT_ID=your_google_oauth_web_client_id
 
-# Optional Node -> Python endpoint override
+# Optional Node -> Python endpoint overrides
 PYTHON_RAG_URL=http://localhost:8000/analyze
+PYTHON_VOICE_URL=http://localhost:8000/analyze-voice
 
 # Password reset OTP
 PASSWORD_RESET_TTL_MINUTES=20
@@ -144,6 +158,7 @@ Auth routes:
 Analysis and history routes:
 
 - POST /api/analyze (requires bearer token)
+- POST /api/analyze-voice (requires bearer token)
 - GET /api/history (requires bearer token)
 - GET /api/health
 
@@ -155,6 +170,14 @@ Analysis and history routes:
 4. Node sends normalized request to Python RAG.
 5. Python returns structured legal-analysis JSON.
 6. Node returns response and stores history in MongoDB.
+
+Voice flow:
+
+1. Client starts recording from the input panel mic button.
+2. Live transcription appears in the text box.
+3. User stops recording and can manually review/correct transcript text.
+4. User clicks Analyze Situation to submit the final corrected text.
+5. Server forwards to Python voice pipeline for transcription context + RAG analysis.
 
 ## 9. Forgot Password OTP Flow
 
@@ -177,16 +200,22 @@ No OTP or raw reset token is returned in API responses.
 - Analyze fails while server is healthy:
   Verify Python RAG service is running on http://localhost:8000.
 - Gemini key errors:
-  Ensure GEMINI_API_KEY is present for rag_service startup.
+  Ensure GEMINI_API_KEY is present, or set GEMINI_API_KEY_RAG.
+- Voice requests fail with quota errors:
+  Set GEMINI_API_KEY_VOICE so voice transcription traffic is isolated from RAG traffic.
+- Translation intermittently fails due limits:
+  Set GEMINI_API_KEY_TRANSLATION to isolate translation load from other Gemini tasks.
 
 ## 11. Main Files
 
 - server/routes/authRoute.js
 - server/routes/analyzeRoute.js
+- server/routes/analyzeVoiceRoute.js
 - server/routes/historyRoute.js
 - server/services/authService.js
 - server/services/emailService.js
 - server/services/ragService.js
+- client/src/components/AnalyzeInput.jsx
 - rag_service/app.py
 - rag_service/rag_pipeline.py
 - rag_service/ingest.py
