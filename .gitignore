@@ -27,9 +27,6 @@ build/
 # Logs
 *.log
 
-# FAISS indexes (optional - do not push generated index files)
-rag_service/faiss_index/
-
 # Local AI data & PDF sources (Cloudinary is now used)
 server/data/import/
 
