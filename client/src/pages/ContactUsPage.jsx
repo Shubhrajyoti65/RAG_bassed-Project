@@ -25,10 +25,10 @@ export default function ContactUsPage({ user }) {
         <aside className="app-card p-6 sm:p-8">
           <h2 className="font-headline text-xl font-bold text-text-primary">Support Details</h2>
           <div className="mt-4 space-y-3 text-sm text-text-secondary font-body">
-            <p><strong className="text-text-primary">Email:</strong> support@nyaaysahayak.in</p>
+            <p><strong className="text-text-primary">Email:</strong> nyaaysahayak@gmail.com</p>
             <p><strong className="text-text-primary">Phone:</strong> +91-00000-00000</p>
             <p><strong className="text-text-primary">Support Timings:</strong> Monday to Friday, 9:00 AM to 6:00 PM IST</p>
-            <p><strong className="text-text-primary">Address:</strong> MNNIT Allahabad, Prayagraj, Uttar Pradesh, India</p>
+            <p><strong className="text-text-primary">Address:</strong> MNNIT Allahabad, Teliyarganj, Prayagraj - 211004, Uttar Pradesh, India</p>
             <p><strong className="text-text-primary">Response Window:</strong> Within 24 business hours</p>
           </div>
         </aside>

@@ -4,9 +4,9 @@ import JudgmentTicker from "../components/JudgmentTicker";
 
 const FEATURES = [
   {
-    title: "AI Case Analysis",
+    title: "Secure Access and Recovery",
     description:
-      "Understand complex legal narratives through structured issue mapping and legal context extraction.",
+      "Sign in with email/password or Google, and use OTP-based password reset for secure account recovery.",
     icon: (
       <path
         strokeLinecap="round"
@@ -17,9 +17,9 @@ const FEATURES = [
     ),
   },
   {
-    title: "Provision Matching",
+    title: "Voice-to-Analysis Workflow",
     description:
-      "Identify relevant statutory provisions and map your facts to legal pathways likely to matter in consultation.",
+      "Record voice queries with live transcription, review or edit the transcript, then submit the final text for analysis.",
     icon: (
       <path
         strokeLinecap="round"
@@ -30,9 +30,9 @@ const FEATURES = [
     ),
   },
   {
-    title: "Precedent Search",
+    title: "Multilingual Legal Guidance",
     description:
-      "Surface similar judgments with confidence signals so you can prepare clear, fact-based next steps quickly.",
+      "Automatic language detection and translated outputs help you understand analysis, provisions, and similar cases in context.",
     icon: (
       <path
         strokeLinecap="round"
@@ -47,34 +47,37 @@ const FEATURES = [
 const PROCESS_STEPS = [
   {
     number: "01",
-    title: "Describe your situation",
+    title: "Sign in and submit your case",
     description:
-      "Type your case details or upload a PDF. Share facts in your own words, not legal jargon.",
+      "Protected analysis supports typed facts and PDF uploads so your legal queries stay linked to your account.",
   },
   {
     number: "02",
-    title: "Run AI legal analysis",
+    title: "Speak, review, and refine",
     description:
-      "Our retrieval pipeline compares your input with curated judgments and extracts useful legal structure.",
+      "Use voice input with live transcription, edit the transcript if needed, and run analysis on your final version.",
   },
   {
     number: "03",
-    title: "Review clear guidance",
+    title: "Get results and track history",
     description:
-      "Get a concise summary, suggested provisions, similar cases, and practical preparation points.",
+      "Receive structured guidance with improved similar-case presentation and revisit prior analyses anytime from history.",
   },
 ];
 
 const TRUST_STATS = [
-  { label: "Cases analyzed", value: "500+" },
-  { label: "Accuracy signal", value: "98%" },
-  { label: "Provisions indexed", value: "50+" },
-  { label: "Availability", value: "24/7" },
+  { label: "Sign-in options", value: "Email + Google" },
+  { label: "Input modes", value: "Text + PDF + Voice" },
+  { label: "Language support", value: "Detect + Translate" },
+  { label: "User history", value: "Saved per account" },
 ];
 
 const CONTACT_POINTS = [
-  { title: "Email", detail: "support@nyaaysahayak.in" },
-  { title: "Location", detail: "MNNIT Allahabad, India" },
+  { title: "Email", detail: "nyaaysahayak@gmail.com" },
+  {
+    title: "Location",
+    detail: "MNNIT Allahabad, Teliyarganj, Prayagraj - 211004, Uttar Pradesh, India",
+  },
   { title: "Support hours", detail: "Mon to Fri, 9:00 AM to 6:00 PM IST" },
 ];
 
@@ -222,7 +225,7 @@ export default function Home() {
             </h1>
 
             <p className="hero-copy-text mt-5 max-w-2xl font-body text-base sm:text-lg font-bold text-text-secondary leading-relaxed">
-              Nyaay Sahayak turns complex case details into structured and understandable legal guidance so you can prepare confidently.
+              Nyaay Sahayak delivers protected, multilingual legal analysis from text, PDF, or voice input with personal history tracking.
             </p>
 
             <div className="hero-copy-actions mt-8 flex flex-col sm:flex-row gap-3 sm:items-center">
@@ -246,21 +249,21 @@ export default function Home() {
             <p className="font-label text-[11px] uppercase tracking-[0.2em] text-white/70">Highlight</p>
             <h2 className="mt-2 font-headline text-2xl font-bold">Legal dashboard preview</h2>
             <p className="mt-3 font-body text-sm text-white/85 leading-relaxed">
-              Upload facts, review extracted provisions, and compare precedent confidence in one clear workflow.
+              Submit typed or voice queries, refine live transcripts, and review clearer similar-case insights in one workflow.
             </p>
 
             <div className="mt-6 grid grid-cols-3 gap-3">
               <div className="hero-mini-stat rounded-xl bg-white/10 p-3">
-                <p className="font-headline text-xl font-bold">94%</p>
-                <p className="font-label text-[10px] uppercase tracking-[0.14em] text-white/75">Confidence</p>
+                <p className="font-headline text-xl font-bold">OTP</p>
+                <p className="font-label text-[10px] uppercase tracking-[0.14em] text-white/75">Recovery</p>
               </div>
               <div className="hero-mini-stat rounded-xl bg-white/10 p-3">
-                <p className="font-headline text-xl font-bold">4</p>
-                <p className="font-label text-[10px] uppercase tracking-[0.14em] text-white/75">Provisions</p>
+                <p className="font-headline text-xl font-bold">Live</p>
+                <p className="font-label text-[10px] uppercase tracking-[0.14em] text-white/75">Transcript</p>
               </div>
               <div className="hero-mini-stat rounded-xl bg-white/10 p-3">
-                <p className="font-headline text-xl font-bold">3</p>
-                <p className="font-label text-[10px] uppercase tracking-[0.14em] text-white/75">Cases</p>
+                <p className="font-headline text-xl font-bold">Saved</p>
+                <p className="font-label text-[10px] uppercase tracking-[0.14em] text-white/75">History</p>
               </div>
             </div>
             </div>
@@ -273,7 +276,7 @@ export default function Home() {
       <section id="features" className="space-y-7">
         <div>
           <p className="font-label text-xs font-bold tracking-[0.24em] uppercase text-primary">Capabilities</p>
-          <h2 className="mt-2 font-headline text-3xl sm:text-4xl font-bold text-text-primary">Built for practical legal clarity</h2>
+          <h2 className="mt-2 font-headline text-3xl sm:text-4xl font-bold text-text-primary">Built for practical legal clarity and modern workflows</h2>
         </div>
 
         <div ref={featuresRef} className="grid gap-4 md:grid-cols-3">
@@ -323,8 +326,8 @@ export default function Home() {
             className="app-card ui-border-highlight animate-popIn p-5 text-center ring-2 ring-primary/40 shadow-xl hover:scale-[1.045] hover:ring-primary/80 hover:shadow-primary/20 transition-all duration-400 bg-linear-to-br from-surface to-surface/80"
             style={{ animationDelay: `${index * 0.07}s` }}
           >
-            <p className="font-headline text-3xl font-bold text-text-primary drop-shadow-[0_1px_6px_rgba(80,180,255,0.18)]">{stat.value}</p>
-            <p className="mt-1 font-label text-xs font-semibold uppercase tracking-[0.17em] text-primary drop-shadow-[0_1px_4px_rgba(80,180,255,0.10)]">{stat.label}</p>
+            <p className="font-headline text-xl sm:text-2xl font-bold text-text-primary drop-shadow-[0_1px_6px_rgba(80,180,255,0.18)]">{stat.value}</p>
+            <p className="mt-1 font-label text-[11px] font-semibold uppercase tracking-[0.12em] text-primary drop-shadow-[0_1px_4px_rgba(80,180,255,0.10)]">{stat.label}</p>
           </article>
         ))}
       </section>
@@ -340,7 +343,7 @@ export default function Home() {
             By combining retrieval-augmented generation with curated judgments, the platform helps users understand relevant legal pathways faster.
           </p>
           <p>
-            The output is informational and structured for preparation, so advocates and users can discuss facts with better clarity across legal domains.
+            The landing experience includes rotating featured legal updates, and analysis output now presents similar cases with cleaner titles and clearer action styling.
           </p>
         </div>
       </section>
