@@ -154,17 +154,25 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
         setVoiceStatusMessage("Voice input had an issue. You can edit the text and continue.");
       };
 
+      let sessionFinalText = "";
+
       rec.onresult = (event) => {
-        let finalTrans = "";
-        let interimTrans = "";
-        for (let i = 0; i < event.results.length; ++i) {
+        let interimText = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const chunk = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            finalTrans += event.results[i][0].transcript;
+            // Add a space if needed to prevent merging like "मेरापति"
+            const needsSpace = sessionFinalText.length > 0 && 
+                               !sessionFinalText.endsWith(" ") && 
+                               !chunk.startsWith(" ");
+            sessionFinalText += (needsSpace ? " " : "") + chunk;
           } else {
-            interimTrans += event.results[i][0].transcript;
+            interimText += chunk;
           }
         }
-        setText(`${transcriptPrefix}${finalTrans}${interimTrans}`.trim());
+
+        const newContent = `${sessionFinalText}${interimText}`.trim();
+        setText(`${transcriptPrefix}${newContent}`.trim());
       };
 
       rec.onend = () => {
@@ -364,7 +372,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
 
       {/* Virtual Keyboard */}
       {showKeyboard && selectedLanguage !== "English" && !file && (
-        <div className="mt-2 p-1.5 bg-surface/90 rounded-xl ui-border-highlight shadow-lg animate-popIn">
+        <div className={`mt-2 p-1.5 bg-surface/90 rounded-xl ui-border-highlight shadow-lg animate-popIn ${isRecording ? 'opacity-40 pointer-events-none' : ''}`}>
           <style>{`
             .my-custom-theme.hg-theme-default {
               background-color: transparent;
@@ -384,7 +392,7 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
             keyboardRef={(r) => (keyboardRef.current = r)}
             layoutName={layoutName}
             layout={getKeyboardLayout(selectedLanguage) || { default: ["{bksp}"] }}
-            onChange={(input) => setText(input)}
+            onChange={(input) => !isRecording && setText(input)}
             onKeyPress={onKeyPress}
             theme="hg-theme-default hg-layout-default my-custom-theme"
           />
