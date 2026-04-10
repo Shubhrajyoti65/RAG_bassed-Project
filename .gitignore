@@ -1,4 +1,3 @@
-```gitignore id="git05"
 # Python virtual environment
 .venv/
 venv/
@@ -37,4 +36,3 @@ huggingface/
 # OS files
 .DS_Store
 Thumbs.db
-```
