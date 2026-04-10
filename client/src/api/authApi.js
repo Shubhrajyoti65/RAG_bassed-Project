@@ -1,6 +1,8 @@
+import API_BASE from "./config";
+
 // Registers a new user with name, email, and password
 export async function signupUser({ name, email, password }) {
-  const response = await fetch("/api/auth/signup", {
+  const response = await fetch(`${API_BASE}/api/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, email, password }),
@@ -16,7 +18,7 @@ export async function signupUser({ name, email, password }) {
 
 // Authenticates an existing user and returns a session token
 export async function loginUser({ email, password }) {
-  const response = await fetch("/api/auth/login", {
+  const response = await fetch(`${API_BASE}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -32,7 +34,7 @@ export async function loginUser({ email, password }) {
 
 // Authenticates a user via a Google OAuth ID token
 export async function googleAuthUser({ idToken }) {
-  const response = await fetch("/api/auth/google", {
+  const response = await fetch(`${API_BASE}/api/auth/google`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ idToken }),
@@ -50,7 +52,7 @@ export async function googleAuthUser({ idToken }) {
 
 // Requests a password reset OTP for an existing account email
 export async function requestPasswordReset({ email }) {
-  const response = await fetch("/api/auth/forgot-password", {
+  const response = await fetch(`${API_BASE}/api/auth/forgot-password`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email }),
@@ -68,7 +70,7 @@ export async function requestPasswordReset({ email }) {
 
 // Resets account password using a valid reset OTP
 export async function resetPasswordWithToken({ token, newPassword }) {
-  const response = await fetch("/api/auth/reset-password", {
+  const response = await fetch(`${API_BASE}/api/auth/reset-password`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ otp: token, newPassword }),
@@ -86,7 +88,7 @@ export async function resetPasswordWithToken({ token, newPassword }) {
 
 // Retrieves the logged-in user's profile information using a valid token
 export async function getCurrentUser(token) {
-  const response = await fetch("/api/auth/me", {
+  const response = await fetch(`${API_BASE}/api/auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -100,7 +102,7 @@ export async function getCurrentUser(token) {
 
 // Updates the current user's profile details including name, avatar, and gender
 export async function updateCurrentUser(token, { name, avatarUrl, gender }) {
-  const response = await fetch("/api/auth/me", {
+  const response = await fetch(`${API_BASE}/api/auth/me`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

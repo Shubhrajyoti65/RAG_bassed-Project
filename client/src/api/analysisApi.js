@@ -1,3 +1,5 @@
+import API_BASE from "./config";
+
 // Sends case text or a PDF file to the backend for automated legal analysis
 export async function submitAnalysis({
   text,
@@ -19,7 +21,7 @@ export async function submitAnalysis({
     if (language) {
       formData.append("language", language);
     }
-    response = await fetch("/api/analyze", {
+    response = await fetch(`${API_BASE}/api/analyze`, {
       method: "POST",
       headers: authHeaders,
       body: formData,
@@ -31,13 +33,13 @@ export async function submitAnalysis({
       formData.append("category", category);
     }
     // Language is auto-detected on the backend for voice
-    response = await fetch("/api/analyze-voice", {
+    response = await fetch(`${API_BASE}/api/analyze-voice`, {
       method: "POST",
       headers: authHeaders,
       body: formData,
     });
   } else {
-    response = await fetch("/api/analyze", {
+    response = await fetch(`${API_BASE}/api/analyze`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders },
       body: JSON.stringify({ text, category, language }),

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import API_BASE from "../api/config";
 
 export default function JudgmentTicker() {
   const [judgments, setJudgments] = useState([]);
@@ -18,7 +19,7 @@ export default function JudgmentTicker() {
         setIsLoading(true);
         setHasError(false);
 
-        const response = await fetch("/api/livelaw");
+        const response = await fetch(`${API_BASE}/api/livelaw`);
         if (!response.ok) {
           throw new Error(`LiveLaw API failed with ${response.status}`);
         }
