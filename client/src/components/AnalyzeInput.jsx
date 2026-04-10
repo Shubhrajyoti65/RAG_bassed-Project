@@ -155,17 +155,21 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
       };
 
       let sessionFinalText = "";
+      let processedUpTo = 0;
 
       rec.onresult = (event) => {
+        // Rebuild final text only from newly finalized results
         let interimText = "";
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
+        for (let i = 0; i < event.results.length; ++i) {
           const chunk = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            // Add a space if needed to prevent merging like "मेरापति"
-            const needsSpace = sessionFinalText.length > 0 && 
-                               !sessionFinalText.endsWith(" ") && 
-                               !chunk.startsWith(" ");
-            sessionFinalText += (needsSpace ? " " : "") + chunk;
+            if (i >= processedUpTo) {
+              const needsSpace = sessionFinalText.length > 0 && 
+                                 !sessionFinalText.endsWith(" ") && 
+                                 !chunk.startsWith(" ");
+              sessionFinalText += (needsSpace ? " " : "") + chunk;
+              processedUpTo = i + 1;
+            }
           } else {
             interimText += chunk;
           }
