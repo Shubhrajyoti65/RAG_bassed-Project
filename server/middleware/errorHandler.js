@@ -64,6 +64,18 @@ function errorHandler(err, req, res, next) {
     });
   }
 
+  if (message.includes("econnrefused") || message.includes("connection refused")) {
+    return res.status(503).json({
+      error: "The AI service is currently offline or warming up. Please try again in 30 seconds."
+    });
+  }
+
+  if (message.includes("timeout") || message.includes("econnaborted")) {
+    return res.status(504).json({
+      error: "The analysis is taking longer than expected. The AI service may be busy. Please try again."
+    });
+  }
+
   if (
     Number.isInteger(err.statusCode) &&
     err.statusCode >= 400 &&

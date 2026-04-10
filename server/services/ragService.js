@@ -16,34 +16,36 @@ async function analyzeCase(
     throw new Error("Case text is required");
   }
 
-  const response = await fetch(PYTHON_RAG_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ text, category, language }),
-  });
+  const timeout = parseInt(process.env.PYTHON_REQUEST_TIMEOUT_MS) || 240000;
 
-  const raw = await response.text();
-  let parsed;
   try {
-    parsed = raw ? JSON.parse(raw) : {};
+    const response = await axios.post(PYTHON_RAG_URL, { 
+      text, 
+      category, 
+      language 
+    }, {
+      timeout,
+      headers: { "Content-Type": "application/json" }
+    });
+
+    validateAnalysis(response.data);
+    return response.data;
   } catch (error) {
-    throw new Error(
-      `Python RAG service returned non-JSON response: ${error.message}`
-    );
-  }
+    if (error.response) {
+      const parsed = error.response.data;
+      const message =
+        parsed?.detail ||
+        parsed?.error ||
+        `Python RAG service failed with status ${error.response.status}`;
+      throw new Error(message);
+    }
+    
+    if (error.code === "ECONNABORTED") {
+      throw new Error("Analysis timed out. The AI service is taking longer than usual to respond. Please try again in a few moments.");
+    }
 
-  if (!response.ok) {
-    const message =
-      parsed?.detail ||
-      parsed?.error ||
-      `Python RAG service failed with status ${response.status}`;
-    throw new Error(message);
+    throw error;
   }
-
-  validateAnalysis(parsed);
-  return parsed;
 }
 
 // Validates that the LLM analysis response contains all required fields

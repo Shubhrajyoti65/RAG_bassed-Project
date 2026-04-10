@@ -118,6 +118,8 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
 
   const startRecording = () => {
     try {
+      if (isRecording || recognition) return;
+
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
         alert("Live voice transcription is not supported in this browser. Please type your query.");
@@ -153,16 +155,16 @@ export default function AnalyzeInput({ onAnalyze, loading }) {
       };
 
       rec.onresult = (event) => {
-        let interimTranscript = "";
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const transcriptChunk = event.results[i][0].transcript;
+        let finalTrans = "";
+        let interimTrans = "";
+        for (let i = 0; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
-            localFinalTranscript += transcriptChunk;
+            finalTrans += event.results[i][0].transcript;
           } else {
-            interimTranscript += transcriptChunk;
+            interimTrans += event.results[i][0].transcript;
           }
         }
-        setText(`${transcriptPrefix}${localFinalTranscript}${interimTranscript}`.trim());
+        setText(`${transcriptPrefix}${finalTrans}${interimTrans}`.trim());
       };
 
       rec.onend = () => {
