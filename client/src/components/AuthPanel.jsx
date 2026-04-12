@@ -13,14 +13,15 @@ const initialForm = {
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 const AUTH_BG_FILES = [
-  "ChatGPT Image Mar 29, 2026, 08_33_37 PM.png",
-  "ChatGPT Image Mar 29, 2026, 08_33_59 PM.png",
-  "ChatGPT Image Mar 29, 2026, 08_34_04 PM.png",
-  "ChatGPT Image Mar 30, 2026, 01_17_52 AM.png",
-  "Gemini_Generated_Image_191kuv191kuv191k.png",
-  "Gemini_Generated_Image_5aepxz5aepxz5aep.png",
-  "Gemini_Generated_Image_grpqdygrpqdygrpq.png",
-  "Gemini_Generated_Image_w917iiw917iiw917.png",
+  "1.png",
+  "2.png",
+  "3.png",
+  "4.png",
+  "5.png",
+  "6.png",
+  "7.png",
+  "8 (2).png",
+  "9 (2).png",
 ];
 
 // Returns the full public path for an authentication background image
