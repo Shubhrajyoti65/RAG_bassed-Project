@@ -97,13 +97,19 @@ async function signup({ name, email, password }) {
   const safePassword = String(password || "");
 
   if (!safeName || safeName.length < 2) {
-    throw new Error("Name must be at least 2 characters long.");
+    const error = new Error("Name must be at least 2 characters long.");
+    error.statusCode = 400;
+    throw error;
   }
   if (!safeEmail || !safeEmail.includes("@")) {
-    throw new Error("Please provide a valid email address.");
+    const error = new Error("Please provide a valid email address.");
+    error.statusCode = 400;
+    throw error;
   }
   if (safePassword.length < 6) {
-    throw new Error("Password must be at least 6 characters long.");
+    const error = new Error("Password must be at least 6 characters long.");
+    error.statusCode = 400;
+    throw error;
   }
 
   const existingUser = await User.findOne({ email: safeEmail }).lean();
@@ -115,12 +121,29 @@ async function signup({ name, email, password }) {
   }
 
   const passwordHash = await bcrypt.hash(safePassword, 10);
-  const user = await User.create({
-    name: safeName,
-    email: safeEmail,
-    passwordHash,
-    authProvider: "local",
-  });
+
+  let user;
+  try {
+    user = await User.create({
+      name: safeName,
+      email: safeEmail,
+      passwordHash,
+      authProvider: "local",
+    });
+  } catch (dbError) {
+    if (dbError?.code === 11000) {
+      const duplicateField =
+        Object.keys(dbError.keyPattern || {})[0] || "field";
+      const error = new Error(
+        duplicateField === "email"
+          ? "An account with this email already exists."
+          : "This account information already exists."
+      );
+      error.statusCode = 409;
+      throw error;
+    }
+    throw dbError;
+  }
 
   return toPublicUser(user);
 }

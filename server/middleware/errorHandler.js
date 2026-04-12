@@ -10,6 +10,16 @@ function errorHandler(err, req, res, next) {
     return res.status(401).json({ error: err.message || "Unauthorized." });
   }
 
+  if (err.code === 11000) {
+    const duplicateField = Object.keys(err.keyPattern || {})[0] || "field";
+    return res.status(409).json({
+      error:
+        duplicateField === "email"
+          ? "An account with this email already exists."
+          : "This account information already exists.",
+    });
+  }
+
   if (err.statusCode === 409) {
     return res.status(409).json({ error: err.message || "Conflict." });
   }
@@ -64,15 +74,20 @@ function errorHandler(err, req, res, next) {
     });
   }
 
-  if (message.includes("econnrefused") || message.includes("connection refused")) {
+  if (
+    message.includes("econnrefused") ||
+    message.includes("connection refused")
+  ) {
     return res.status(503).json({
-      error: "The AI service is currently offline or warming up. Please try again in 30 seconds."
+      error:
+        "The AI service is currently offline or warming up. Please try again in 30 seconds.",
     });
   }
 
   if (message.includes("timeout") || message.includes("econnaborted")) {
     return res.status(504).json({
-      error: "The analysis is taking longer than expected. The AI service may be busy. Please try again."
+      error:
+        "The analysis is taking longer than expected. The AI service may be busy. Please try again.",
     });
   }
 
